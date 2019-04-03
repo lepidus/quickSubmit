@@ -76,9 +76,34 @@
 
 		{if $pubIds}
 			{foreach from=$pubIdPlugins item=pubIdPlugin}
-				{assign var=pubIdAssignFile value=$pubIdPlugin->getPubIdAssignFile()}
-				{assign var=canBeAssigned value=$pubIdPlugin->canBeAssigned($submission)}
-				{include file="$pubIdAssignFile" pubIdPlugin=$pubIdPlugin pubObject=$submission canBeAssigned=$canBeAssigned}
+				{if $pubIdPlugin->getPubIdType() == 'doi'}
+					{assign var=canBeAssigned value=$pubIdPlugin->canBeAssigned($submission)}
+					{assign var=pubObject value=$submission}
+					{assign var=pubObjectType value=$pubIdPlugin->getPubObjectType($pubObject)}
+					{assign var=enableObjectDoi value=$pubIdPlugin->getSetting($currentContext->getId(), "enable`$pubObjectType`Doi")}
+					{if $enableObjectDoi}
+						{fbvFormArea id="pubIdDOIFormArea" class="border" title="plugins.pubIds.doi.editor.doi"}
+							{assign var=pubId value=$pubIdPlugin->getPubId($pubObject)}
+							{if !$canBeAssigned}
+								{fbvFormSection}
+									{if !$pubId}
+										<p class="pkp_help">{translate key="plugins.pubIds.doi.editor.assignDoi.emptySuffix"}</p>
+									{else}
+										<p class="pkp_help">{translate key="plugins.pubIds.doi.editor.assignDoi.pattern" pubId=$pubId}</p>
+									{/if}
+								{/fbvFormSection}
+							{else}
+								{capture assign=translatedObjectType}{translate key="plugins.pubIds.doi.editor.doiObjectType"|cat:$pubObjectType}{/capture}
+
+								{capture assign=assignCheckboxLabel}{translate key="plugins.pubIds.doi.editor.assignDoi" pubId=$pubId pubObjectType=$translatedObjectType}{/capture}
+
+								{fbvFormSection list=true}
+									{fbvElement type="checkbox" id="assignDoi" value="1" label=$assignCheckboxLabel translate=false disabled=$disabled}
+								{/fbvFormSection}
+							{/if}
+						{/fbvFormArea}
+					{/if}
+				{/if}
 			{/foreach}
 		{/if}
 
