@@ -167,6 +167,21 @@ class QuickSubmitForm extends Form {
 		$templateMgr->assign('wordCount', $wordCount);
 		$templateMgr->assign('abstractsRequired', !$section->getAbstractsNotRequired());
 
+		// DOI support
+		$assignPubIds = false;
+		$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);		
+		foreach ($pubIdPlugins as $pubIdPlugin) {
+			if ($pubIdPlugin->isObjectTypeEnabled('Submission', $this->context->getId())) {
+				$assignPubIds = true;
+				break;
+			}
+		}
+		if ($assignPubIds) {
+			$templateMgr->assign('pubIdPlugins', $pubIdPlugins);
+			$templateMgr->assign('pubIds', true);
+		}
+		// DOI support
+
 		parent::display();
 	}
 
@@ -352,6 +367,16 @@ class QuickSubmitForm extends Form {
 				}
 			}
 		}
+
+		// DOI support
+		import('controllers.tab.pubIds.form.PublicIdentifiersForm');
+		$submission = $this->submission;
+		$form = new PublicIdentifiersForm($submission);
+		$form->readInputData();
+		if ($form->validate($this->request)) {
+			$form->execute($this->request);
+		}
+		// DOI support	
 
 		// Index article.
 		import('classes.search.ArticleSearchIndex');
