@@ -36,7 +36,7 @@
 		this.parent($form, options);
 		this.callbackWrapper(this.updateSchedulePublicationDiv_());
 
-		$('#locale, #sectionId').change(function() {
+		$('#locale, #seriesId').change(function() {
 			// Trick the form not to validate missing data before submitting
 			$('input,textarea,select').filter('[required]').each(function() {
 				$(this).removeAttr('required');
@@ -64,7 +64,7 @@
 	$.pkp.plugins.importexport.quickSubmit.js.QuickSubmitFormHandler.prototype.
 			updateSchedulePublicationDiv_ = function() {
 
-		$('input[type=radio][name=articleStatus]').change(function() {
+		$('input[type=radio][name=submissionStatus]').change(function() {
 			if ($(this).is(':checked') && this.value == '0') {
 				$('#schedulePublicationDiv').hide();
 			} else if ($(this).is(':checked') && this.value == '1') {
@@ -74,7 +74,7 @@
 			}
 		});
 
-		$('input[type=radio][name=articleStatus]').trigger('change');
+		$('input[type=radio][name=submissionStatus]').trigger('change');
 
 		$('#issueId').change(function() {
 			var val, array;

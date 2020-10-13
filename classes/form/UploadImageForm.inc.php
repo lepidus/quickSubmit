@@ -34,7 +34,7 @@ class UploadImageForm extends Form {
 	/** @var $plugin QuickSubmitPlugin */
 	var $plugin;
 
-	/** @var $context Journal */
+	/** @var $context Press */
 	var $context;
 
 	/**

@@ -38,8 +38,8 @@ class QuickSubmitFunctionalTest extends WebTestCase {
 			->click($this->waitForElementPresent('//ul[@id="navigationPrimary"]//a[text()="Import/Export"]'))
 			->perform();
 		$this->click($selector='link=QuickSubmit Plugin');
-		$this->waitForElementPresent('css=[id=sectionId]');
-		$this->select('id=sectionId', 'label=' . $this->escapeJS('Articles'));
+		$this->waitForElementPresent('css=[id=seriesId]');
+		$this->select('id=seriesId', 'label=' . $this->escapeJS('Articles'));
 		sleep(10); // HACK: The form resubmits on section selection. Wait.
 
 		$this->waitForElementPresent($selector='css=[id^=title-]');

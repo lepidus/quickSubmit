@@ -37,7 +37,7 @@
 		{csrf}
 		{include file="controllers/notification/inPlaceNotification.tpl" notificationId="quickSubmitFormNotification"}
 
-		{fbvFormSection label="editor.issues.coverPage" class=$wizardClass}
+		{fbvFormSection label="monograph.coverImage" class=$wizardClass}
 			<div id="{$openCoverImageLinkAction->getId()}" class="pkp_linkActions">
 				{include file="linkAction/linkAction.tpl" action=$openCoverImageLinkAction contextId="quickSubmitForm"}
 			</div>
@@ -56,7 +56,7 @@
 		    {/fbvFormSection}
 		{/if}
 
-		{include file="submission/form/section.tpl" readOnly=$formParams.readOnly}
+		{include file="submission/form/series.tpl" readOnly=$formParams.readOnly}
 
 		{include file="core:submission/submissionMetadataFormTitleFields.tpl"}
 		{include file="submission/submissionMetadataFormFields.tpl"}
@@ -70,43 +70,35 @@
 			{$additionalContributorsFields}
 		{/fbvFormArea}
 
-		{capture assign="representationsGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="grid.articleGalleys.ArticleGalleyGridHandler" op="fetchGrid" submissionId=$submissionId publicationId=$publicationId escape=false}{/capture}
-		{load_url_in_div id="formatsGridContainer"|uniqid url=$representationsGridUrl}
+		{fbvFormArea id="pubFormats"}
+			{capture assign="representationsGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="grid.catalogEntry.PublicationFormatGridHandler" op="fetchGrid" submissionId=$submissionId publicationId=$publicationId escape=false}{/capture}
+			{load_url_in_div id="formatsGridContainer"|uniqid url=$representationsGridUrl}
+		{/fbvFormArea}
+
+		{fbvFormArea id="chapters"}
+			{capture assign=chaptersGridUrl}{url router=$smarty.const.ROUTE_COMPONENT  component="grid.users.chapter.ChapterGridHandler" op="fetchGrid" submissionId=$submissionId publicationId=$publicationId escape=false}{/capture}
+			{load_url_in_div id="chaptersGridContainer" url=$chaptersGridUrl}
+		{/fbvFormArea}
+
+		{fbvFormArea id="permissions" title="submission.permissions"}
+			{fbvElement type="text" id="licenseUrl" label="submission.licenseURL" value=$licenseUrl}
+			{fbvElement type="text" id="copyrightHolder" label="submission.copyrightHolder" value=$copyrightHolder multilingual=true size=$fbvStyles.size.MEDIUM inline=true}
+			{fbvElement type="text" id="copyrightYear" label="submission.copyrightYear" value=$copyrightYear size=$fbvStyles.size.SMALL inline=true}
+		{/fbvFormArea}
 
 		{* Publishing article section *}
-		{if $hasIssues}
 			{fbvFormSection id='articlePublishingSection' list="false"}
 				{fbvElement type="radio" id="articleUnpublished" name="articleStatus" value=0 checked=$articleStatus|compare:false label='plugins.importexport.quickSubmit.unpublished' translate="true"}
 				{fbvElement type="radio" id="articlePublished" name="articleStatus" value=1 checked=$articleStatus|compare:true label='plugins.importexport.quickSubmit.published' translate="true"}
 
 				{fbvFormSection id='schedulePublicationDiv' list="false"}
-					{fbvFormArea id="schedulingInformation" title="editor.article.scheduleForPublication"}
-						{fbvFormSection for="schedule"}
-							{fbvElement type="select" required=true id="issueId" from=$issueOptions selected=$issueId translate=false label="editor.article.scheduleForPublication.toBeAssigned"}
-						{/fbvFormSection}
-					{/fbvFormArea}
-
-					{fbvFormArea id="pagesInformation" title="editor.issues.pages"}
-						{fbvFormSection for="customExtras"}
-							{fbvElement type="text" id="pages" label="editor.issues.pages" value=$pages inline=true size=$fbvStyles.size.MEDIUM}
-						{/fbvFormSection}
-					{/fbvFormArea}
-
-					{fbvFormArea id="schedulingInformationDatePublished" title="editor.issues.published"}
+					{fbvFormArea id="schedulingInformationDatePublished" title="publication.datePublished"}
 						{fbvFormSection for="publishedDate"}
-							{fbvElement type="text" required=true id="datePublished" value=$datePublished translate=false label="editor.issues.published" inline=true size=$fbvStyles.size.MEDIUM class="datepicker"}
+							{fbvElement type="text" required=true id="datePublished" value=$datePublished translate=false label="publication.datePublished" inline=true size=$fbvStyles.size.MEDIUM class="datepicker"}
 						{/fbvFormSection}
-					{/fbvFormArea}
-
-					{fbvFormArea id="permissions" title="submission.permissions"}
-						{fbvElement type="text" id="licenseUrl" label="submission.licenseURL" value=$licenseUrl}
-						{fbvElement type="text" id="copyrightHolder" label="submission.copyrightHolder" value=$copyrightHolder multilingual=true size=$fbvStyles.size.MEDIUM inline=true}
-						{fbvElement type="text" id="copyrightYear" label="submission.copyrightYear" value=$copyrightYear size=$fbvStyles.size.SMALL inline=true}
 					{/fbvFormArea}
 				{/fbvFormSection}
-
 			{/fbvFormSection}
-		{/if}
 
 		{capture assign="cancelUrl"}{plugin_url path="cancelSubmit" submissionId="$submissionId"}{/capture}
 

@@ -14,7 +14,7 @@ describe('Quick Submit plugin tests', function() {
 		cy.get('ul[id="navigationPrimary"] a:contains("Tools")').click();
 		cy.get('ul[id="navigationPrimary"] a:contains("Import/Export")').click();
 		cy.get('a:contains("QuickSubmit Plugin")').click();
-		cy.get('select[id="sectionId"]').select('Articles');
+		cy.get('select[id="seriesId"]').select('Articles');
 		cy.waitJQuery(); // Wait for form resubmission hack on section change.
 
 		cy.get('input[id^="title-en_US-"]').type('QuickSubmit Published Test Submission', {delay: 0});
@@ -76,7 +76,7 @@ describe('Quick Submit plugin tests', function() {
 		cy.get('ul[id="navigationPrimary"] a:contains("Tools")').click();
 		cy.get('ul[id="navigationPrimary"] a:contains("Import/Export")').click();
 		cy.get('a:contains("QuickSubmit Plugin")').click();
-		cy.get('select[id="sectionId"]').select('Articles');
+		cy.get('select[id="seriesId"]').select('Articles');
 		cy.waitJQuery(); // Wait for form resubmission hack on section change.
 
 		cy.get('input[id^="title-en_US-"]').type('QuickSubmit Unpublished Test Submission', {delay: 0});
