@@ -18,10 +18,10 @@ msgid "plugins.importexport.quickSubmit.description"
 msgstr "One-step submission plugin"
 
 msgid "plugins.importexport.quickSubmit.descriptionLong"
-msgstr "This plugin allows you to quickly add complete submissions to the production stage or directly into an issue."
+msgstr "This plugin allows you to quickly add complete submissions to the production stage or directly into the catalogue."
 
 msgid "plugins.importexport.quickSubmit.success"
-msgstr "Article Added"
+msgstr "Monograph Added"
 
 msgid "plugins.importexport.quickSubmit.successDescription"
 msgstr "Article creation was successful."
