@@ -61,7 +61,6 @@ class QuickSubmitForm extends Form {
 
 		$this->addCheck(new FormValidatorPost($this));
 		$this->addCheck(new FormValidatorCSRF($this));
-		$this->addCheck(new FormValidatorCustom($this, 'seriesId', 'required', 'author.submit.form.seriesRequired', array(DAORegistry::getDAO('SeriesDAO'), 'seriesExists'), array($this->_context->getId())));
 
 		// Validation checks for this form
 		$supportedSubmissionLocales = $this->_context->getSupportedSubmissionLocales();
@@ -139,8 +138,66 @@ class QuickSubmitForm extends Form {
 
 		$templateMgr->assign(array(
 			'submission' => $this->_submission,
+			'publication' => $this->_submission->getCurrentPublication(),
 			'locale' => $this->getDefaultFormLocale(),
 			'publicationId' => $this->_submission->getCurrentPublication()->getId(),
+			'licenseUrl' => $this->_context->getData('licenseUrl'),
+			'copyrightHolderType' => $this->_context->getData('copyrightHolderType')
+		));
+
+		// DOI support
+		$assignPubIds = false;
+		$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);		
+		foreach ($pubIdPlugins as $pubIdPlugin) {
+			if ($pubIdPlugin->isObjectTypeEnabled('Publication', $this->_context->getId())) {
+				$assignPubIds = true;
+				break;
+			}
+		}
+
+		if ($assignPubIds) {
+			$templateMgr->assign('pubIdPlugins', $pubIdPlugins);
+			$templateMgr->assign('pubIds', true);
+		}
+		// DOI support
+
+		// Categories list
+		$assignedCategories = [];
+		$categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
+
+		$items = [];
+		$categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
+		$categories = $categoryDao->getByContextId($this->_context->getId())->toAssociativeArray();
+		foreach ($categories as $category) {
+			$title = $category->getLocalizedTitle();
+			if ($category->getParentId()) {
+				$title = $categories[$category->getParentId()]->getLocalizedTitle() . ' > ' . $title;
+			}
+			$items[] = [
+				'id' => (int) $category->getId(),
+				'title' => $title,
+			];
+		}
+		$categoriesList = new \PKP\components\listPanels\ListPanel(
+			'categories',
+			__('grid.category.categories'),
+			[
+				'canSelect' => true,
+				'items' => $items,
+				'itemsMax' => count($items),
+				'selected' => $assignedCategories,
+				'selectorName' => 'categories[]',
+			]
+		);
+
+		$templateMgr->assign(array(
+			'assignedCategories' => $assignedCategories,
+			'hasCategories' => !empty($categoriesList->items),
+			'categoriesListData' => [
+				'components' => [
+					'categories' => $categoriesList->getConfig(),
+				]
+			]
 		));
 
 		parent::display($request, $template);
@@ -229,9 +286,13 @@ class QuickSubmitForm extends Form {
 				'copyrightHolder',
 				'copyrightYear',
 				'seriesId',
+				'categories',
+				'workType',
 				'submissionId',
 				'submissionStatus',
-				'locale'
+				'locale',
+				'licenseUrl',
+				'assignDoi'
 			)
 		);
 	}
@@ -257,6 +318,7 @@ class QuickSubmitForm extends Form {
 		$this->_submission->setStageId(WORKFLOW_STAGE_ID_PRODUCTION);
 		$this->_submission->setDateSubmitted(Core::getCurrentDate());
 		$this->_submission->setSubmissionProgress(0);
+		$this->_submission->setWorkType($this->getData('workType'));
 
 		parent::execute($this->_submission, ...$functionParams);
 
@@ -266,23 +328,50 @@ class QuickSubmitForm extends Form {
 		$this->_submission = $submissionDao->getById($this->_submission->getId());
 		$publication = $this->_submission->getCurrentPublication();
 
-		$publication->setData('copyrightYear', $this->getData('copyrightYear'));
-		$publication->setData('copyrightHolder', $this->getData('copyrightHolder'), null);
+		if ($this->getData('datePublished')){
+			$publication->setData('copyrightYear', date("Y", strtotime($this->getData('datePublished'))));
+		}
+
+		if ($this->getData('copyrightHolder') == 'author') {
+			$userGroupDao = DAORegistry::getDAO('UserGroupDAO'); /* @var $userGroupDao UserGroupDAO */
+			$userGroups = $userGroupDao->getByContextId($this->_context->getId())->toArray();
+			$publication->setData('copyrightHolder', $publication->getAuthorString($userGroups), $this->getData('locale'));
+		} elseif ($this->getData('copyrightHolder') == 'press') {
+			$publication->setData('copyrightHolder', $this->_context->getLocalizedData('name'), null);
+		}
+
 		$publication->setData('licenseUrl', $this->getData('licenseUrl'));
 
 		if ($publication->getData('seriesId') !== (int) $this->getData('seriesId')) {
-			$publication = Services::get('publication')->edit($publication, ['seriesId' => (int) $this->getData('seriesId')], $this->_request);
-			## change this to setData
+			$publication->setData('seriesId', $this->getData('seriesId'));
 		}
 
-		# Here save publication data
+		// Set DOIs
+		if ($this->getData('assignDoi') == 1){
+			$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
+			$doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
+			$pubId = $doiPubIdPlugin->getPubId($publication);
+			$publication->setData('pub-id::doi', $pubId);
+		}
+
+		// Save the submission categories
+		$categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
+		$categoryDao->deletePublicationAssignments($publication->getId());
+		if ($categories = $this->getData('categories')) {
+			foreach ((array) $categories as $categoryId) {
+				$categoryDao->insertPublicationAssignment($categoryId, $publication->getId());
+			}
+		}
 
 		// If publish now, set date and publish publication
 		if ($this->getData('submissionStatus') == 1) {
 			$publication->setData('datePublished', $this->getData('datePublished'));
 			$publication = Services::get('publication')->publish($publication);
-
 		}
+
+		// Update publication
+		$publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
+		$publicationDao->updateObject($publication);
 
 		// Index monograph.
 		$submissionSearchIndex = Application::getSubmissionSearchIndex();

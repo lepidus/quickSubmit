@@ -112,7 +112,7 @@ class UploadImageForm extends Form {
 	}
 
 	/**
-	 * An action to delete an article cover image.
+	 * An action to delete an monograph cover image.
 	 * @param $request PKPRequest
 	 * @return JSONMessage JSON object
 	 */
@@ -122,7 +122,7 @@ class UploadImageForm extends Form {
 		$publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
 		$file = $request->getUserVar('coverImage');
 
-		// Remove cover image and alt text from article settings
+		// Remove cover image and alt text from monograph settings
 		$locale = AppLocale::getLocale();
 		$this->publication->setData('coverImage', []);
 		$publicationDao->updateObject($this->publication);

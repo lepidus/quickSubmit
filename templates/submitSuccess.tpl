@@ -5,7 +5,7 @@
  * Copyright (c) 2003-2020 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
- * Display a message indicating that the article was successfuly submitted.
+ * Display a message indicating that the monograph was successfuly submitted.
  *}
 {strip}
 {assign var="pageTitle" value="plugins.importexport.quickSubmit.success"}

@@ -43,3 +43,8 @@ msgstr "Unpublished"
 
 msgid "plugins.importexport.quickSubmit.goToSubmission"
 msgstr "Go to Submission"
+
+msgid "plugins.pubIds.doi.editor.doiObjectTypePublication"
+msgstr "Publication"
+
+

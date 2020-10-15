@@ -35,7 +35,7 @@ describe('Quick Submit plugin tests', function() {
 		cy.get('div:contains("Author added.")');
 
 		// Schedule for publication
-		cy.get('input#articlePublished').click();
+		cy.get('input#submissionPublished').click();
 		cy.get('select#issueId').select('Vol. 1 No. 2 (2014)');
 		cy.get('input[id^="datePublished-"]:visible').type('2020-01-01', {delay: 0});
 		cy.get('legend:contains("Published")').click(); // Take focus out of datepicker

@@ -56,11 +56,18 @@
 		    {/fbvFormSection}
 		{/if}
 
+		{fbvFormSection list="true" label="submission.workflowType" description="submission.workflowType.description"}
+			{fbvElement type="radio" name="workType" id="isEditedVolume-0" value=$smarty.const.WORK_TYPE_AUTHORED_WORK checked=$workType|compare:$smarty.const.WORK_TYPE_EDITED_VOLUME:false:true label="submission.workflowType.authoredWork"}
+			{fbvElement type="radio" name="workType" id="isEditedVolume-1" value=$smarty.const.WORK_TYPE_EDITED_VOLUME checked=$workType|compare:$smarty.const.WORK_TYPE_EDITED_VOLUME label="submission.workflowType.editedVolume"}
+		{/fbvFormSection}
+
 		{include file="submission/form/series.tpl" readOnly=$formParams.readOnly}
 
-		{include file="core:submission/submissionMetadataFormTitleFields.tpl"}
-		{include file="submission/submissionMetadataFormFields.tpl"}
+		{include file="core:submission/form/categories.tpl"}
 
+		{include file="core:submission/submissionMetadataFormTitleFields.tpl"}
+
+		{include file="submission/submissionMetadataFormFields.tpl"}
 
 		{fbvFormArea id="contributors"}
 			<!--  Contributors -->
@@ -70,7 +77,7 @@
 			{$additionalContributorsFields}
 		{/fbvFormArea}
 
-		{fbvFormArea id="pubFormats"}
+		{fbvFormArea id="representations-grid"}
 			{capture assign="representationsGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="grid.catalogEntry.PublicationFormatGridHandler" op="fetchGrid" submissionId=$submissionId publicationId=$publicationId escape=false}{/capture}
 			{load_url_in_div id="formatsGridContainer"|uniqid url=$representationsGridUrl}
 		{/fbvFormArea}
@@ -80,16 +87,28 @@
 			{load_url_in_div id="chaptersGridContainer" url=$chaptersGridUrl}
 		{/fbvFormArea}
 
-		{fbvFormArea id="permissions" title="submission.permissions"}
-			{fbvElement type="text" id="licenseUrl" label="submission.licenseURL" value=$licenseUrl}
-			{fbvElement type="text" id="copyrightHolder" label="submission.copyrightHolder" value=$copyrightHolder multilingual=true size=$fbvStyles.size.MEDIUM inline=true}
-			{fbvElement type="text" id="copyrightYear" label="submission.copyrightYear" value=$copyrightYear size=$fbvStyles.size.SMALL inline=true}
+		{if $pubIds}
+			{foreach from=$pubIdPlugins item=pubIdPlugin}
+				{assign var=pubIdAssignFile value=$pubIdPlugin->getPubIdAssignFile()}
+				{assign var=canBeAssigned value=$pubIdPlugin->canBeAssigned($publication)}
+				{include file="$pubIdAssignFile" pubIdPlugin=$pubIdPlugin pubObject=$publication canBeAssigned=$canBeAssigned}
+			{/foreach}
+		{/if}
+
+		{fbvFormArea id="permissions"}
+			{fbvFormSection list="true" label="submission.licenseURL"}
+				{fbvElement type="text" id="licenseUrl" value=$licenseUrl}
+			{/fbvFormSection}
+			{fbvFormSection list="true" label="submission.copyrightHolder"}
+				{fbvElement type="radio" name="copyrightHolder" id="copyrightHolder-0" value="author" checked=$copyrightHolderType|compare:author label="user.role.author"}
+				{fbvElement type="radio" name="copyrightHolder" id="copyrightHolder-1" value="press" checked=$copyrightHolderType|compare:context label="context.context"}
+			{/fbvFormSection}
 		{/fbvFormArea}
 
-		{* Publishing article section *}
-			{fbvFormSection id='articlePublishingSection' list="false"}
-				{fbvElement type="radio" id="articleUnpublished" name="articleStatus" value=0 checked=$articleStatus|compare:false label='plugins.importexport.quickSubmit.unpublished' translate="true"}
-				{fbvElement type="radio" id="articlePublished" name="articleStatus" value=1 checked=$articleStatus|compare:true label='plugins.importexport.quickSubmit.published' translate="true"}
+		{* Publishing monograph section *}
+			{fbvFormSection id='submissionPublishingSection' list="false"}
+				{fbvElement type="radio" id="submissionUnpublished" name="submissionStatus" value=0 checked=$submissionStatus|compare:false label='plugins.importexport.quickSubmit.unpublished' translate="true"}
+				{fbvElement type="radio" id="submissionPublished" name="submissionStatus" value=1 checked=$submissionStatus|compare:true label='plugins.importexport.quickSubmit.published' translate="true"}
 
 				{fbvFormSection id='schedulePublicationDiv' list="false"}
 					{fbvFormArea id="schedulingInformationDatePublished" title="publication.datePublished"}
@@ -98,6 +117,7 @@
 						{/fbvFormSection}
 					{/fbvFormArea}
 				{/fbvFormSection}
+				
 			{/fbvFormSection}
 
 		{capture assign="cancelUrl"}{plugin_url path="cancelSubmit" submissionId="$submissionId"}{/capture}

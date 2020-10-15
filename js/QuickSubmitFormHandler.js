@@ -36,7 +36,7 @@
 		this.parent($form, options);
 		this.callbackWrapper(this.updateSchedulePublicationDiv_());
 
-		$('#locale, #seriesId').change(function() {
+		$('#locale').change(function() {
 			// Trick the form not to validate missing data before submitting
 			$('input,textarea,select').filter('[required]').each(function() {
 				$(this).removeAttr('required');
@@ -76,21 +76,6 @@
 
 		$('input[type=radio][name=submissionStatus]').trigger('change');
 
-		$('#issueId').change(function() {
-			var val, array;
-			val = /** @type {string} */ $('#issuesPublicationDates').val();
-			array = JSON.parse(val);
-			if (!array[$('#issueId').val()]) {
-				$('#schedulingInformationDatePublished').hide();
-			} else {
-				$('input[name="datePublished"]').
-						datepicker('setDate', array[$('#issueId').val()]);
-				$('#ui-datepicker-div').hide();
-				$('#schedulingInformationDatePublished').show();
-			}
-		});
-
-		$('#issueId').trigger('change');
 	};
 
 	/** @param {jQuery} $ jQuery closure. */
