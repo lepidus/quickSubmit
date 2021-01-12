@@ -95,6 +95,25 @@
 			{/foreach}
 		{/if}
 
+		{if $assignPublicationDoi || $assignChapterDoi}
+			{fbvFormArea id="addDois"}
+				{fbvFormSection list="true"}
+				{if $assignPublicationDoi}
+					{fbvElement type="checkbox" id="assignPublicationDoi" value="1" checked=$assignPublicationDoi label="plugins.importexport.quickSubmit.assignPublicationDoi"}
+				{/if}
+				{if $assignChapterDoi}
+					{fbvElement type="checkbox" id="assignChapterDoi" value="1" checked=$assignChapterDoi label="plugins.importexport.quickSubmit.assignChapterDoi"}
+				{/if}
+				{/fbvFormSection}
+			{/fbvFormArea}			
+		{/if}
+
+		{fbvFormArea id="isbn"}
+			{fbvFormSection list="true" label="plugins.importexport.quickSubmit.isbn"}
+				{fbvElement type="text" id="isbn" value=$isbn}
+			{/fbvFormSection}
+		{/fbvFormArea}
+
 		{fbvFormArea id="permissions"}
 			{fbvFormSection list="true" label="submission.licenseURL"}
 				{fbvElement type="text" id="licenseUrl" value=$licenseUrl}

@@ -146,18 +146,15 @@ class QuickSubmitForm extends Form {
 		));
 
 		// DOI support
-		$assignPubIds = false;
-		$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true);		
-		foreach ($pubIdPlugins as $pubIdPlugin) {
-			if ($pubIdPlugin->isObjectTypeEnabled('Publication', $this->_context->getId())) {
-				$assignPubIds = true;
-				break;
+		$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
+		$doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
+		if ($doiPubIdPlugin && $doiPubIdPlugin->getSetting($this->_context->getId(), 'doiPrefix')){
+			if ($doiPubIdPlugin->getSetting($this->_context->getId(), 'enablePublicationDoi')) {
+				$templateMgr->assign('assignPublicationDoi', true);
 			}
-		}
-
-		if ($assignPubIds) {
-			$templateMgr->assign('pubIdPlugins', $pubIdPlugins);
-			$templateMgr->assign('pubIds', true);
+			if ($doiPubIdPlugin->getSetting($this->_context->getId(), 'enableChapterDoi')) {
+				$templateMgr->assign('assignChapterDoi', true);
+			}
 		}
 		// DOI support
 
@@ -283,6 +280,7 @@ class QuickSubmitForm extends Form {
 			array(
 				'datePublished',
 				'licenseUrl',
+				'isbn',
 				'copyrightHolder',
 				'copyrightYear',
 				'seriesId',
@@ -291,8 +289,8 @@ class QuickSubmitForm extends Form {
 				'submissionId',
 				'submissionStatus',
 				'locale',
-				'licenseUrl',
-				'assignDoi'
+				'assignPublicationDoi',
+				'assignChapterDoi',
 			)
 		);
 	}
@@ -342,16 +340,36 @@ class QuickSubmitForm extends Form {
 
 		$publication->setData('licenseUrl', $this->getData('licenseUrl'));
 
+		// Set ISBN for the first book manuscript available.
+		// $publication->setData('isbn', $this->getData('isbn'));
+
 		if ($publication->getData('seriesId') !== (int) $this->getData('seriesId')) {
 			$publication->setData('seriesId', $this->getData('seriesId'));
 		}
 
 		// Set DOIs
-		if ($this->getData('assignDoi') == 1){
+		if ($this->getData('assignPublicationDoi') == 1 || $this->getData('assignChapterDoi') == 1){
 			$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
 			$doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
-			$pubId = $doiPubIdPlugin->getPubId($publication);
-			$publication->setData('pub-id::doi', $pubId);
+			$pubIdPrefix = $doiPubIdPlugin->getSetting($this->_context->getId(), 'doiPrefix');
+			$suffixGenerationStrategy = $doiPubIdPlugin->getSetting($this->_context->getId(), $doiPubIdPlugin->getSuffixFieldName(), $publication);
+
+			if ($this->getData('assignPublicationDoi') == 1) {
+				$pubIdSuffix = $this->getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $publication, $this->_context, $this->_submission, null);
+				$pubId = $doiPubIdPlugin->constructPubId($pubIdPrefix, $pubIdSuffix, $this->_context->getId());
+				$publication->setData('pub-id::doi', $pubId);
+			}
+
+			if ($this->getData('assignChapterDoi') == 1) {
+				$chapterDao = DAORegistry::getDAO('ChapterDAO'); /* @var $chapterDao ChapterDAO */
+				$chapters = $publication->getData('chapters');
+				foreach ($chapters as $chapter) {
+					$pubIdSuffix = $this->getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $chapter, $this->_context, $this->_submission, $chapter);
+					$pubId = $doiPubIdPlugin->constructPubId($pubIdPrefix, $pubIdSuffix, $this->_context->getId());
+					$chapter->setData('pub-id::doi', $pubId);
+					$chapterDao->updateObject($chapter);
+				}
+			}
 		}
 
 		// Save the submission categories
@@ -379,6 +397,51 @@ class QuickSubmitForm extends Form {
 		$submissionSearchIndex->submissionFilesChanged($this->_submission);
 		$submissionSearchIndex->submissionChangesFinished();
 
+	}
+
+	function getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $pubObject, $context, $submission, $chapter){
+		switch ($suffixGenerationStrategy) {
+			case 'customId':
+				$pubIdSuffix = $pubObject->getData($suffixFieldName);
+				break;
+
+			case 'pattern':
+				$suffixPatternsFieldNames = $doiPubIdPlugin->getSuffixPatternsFieldNames();
+				$pubIdSuffix = $doiPubIdPlugin->getSetting($context->getId(), $suffixPatternsFieldNames[$doiPubIdPlugin->getPubObjectType($pubObject)]);
+
+				// %p - press initials
+				$pubIdSuffix = PKPString::regexp_replace('/%p/', PKPString::strtolower($context->getAcronym($context->getPrimaryLocale())), $pubIdSuffix);
+
+				// %x - custom identifier
+				if ($pubObject->getStoredPubId('publisher-id')) {
+					$pubIdSuffix = PKPString::regexp_replace('/%x/', $pubObject->getStoredPubId('publisher-id'), $pubIdSuffix);
+				}
+
+				if ($submission) {
+					// %m - monograph id
+					$pubIdSuffix = PKPString::regexp_replace('/%m/', $submission->getId(), $pubIdSuffix);
+				}
+
+				if ($chapter) {
+					// %c - chapter id
+					$pubIdSuffix = PKPString::regexp_replace('/%c/', $chapter->getId(), $pubIdSuffix);
+				}
+
+				break;
+
+			default:
+				$pubIdSuffix = PKPString::strtolower($context->getAcronym($context->getPrimaryLocale()));
+
+				if ($submission) {
+					$pubIdSuffix .= '.' . $submission->getId();
+				}
+
+				if ($chapter) {
+					$pubIdSuffix .= '.c' . $chapter->getId();
+				}
+		}
+
+		return $pubIdSuffix;
 	}
 
 }
