@@ -372,6 +372,28 @@ class QuickSubmitForm extends Form {
 			}
 		}
 
+		if ($this->getData('isbn')) {
+			$isbn = preg_replace("/[^0-9]/", "", $this->getData('isbn'));
+
+			if (strlen($isbn) == 10) {
+				$isbnType = "02"; // ISBN10
+			}
+			else {
+				$isbnType = "15"; // ISBN13
+			}
+
+			$identificationCodeDao = DAORegistry::getDAO('IdentificationCodeDAO'); /* @var $identificationCodeDao IdentificationCodeDAO */
+
+			foreach ($publication->getData('publicationFormats') as $publicationFormat) {
+				$identificationCode = $identificationCodeDao->newDataObject();
+				$identificationCode->setPublicationFormatId($publicationFormat->getId());
+				$identificationCode->setCode($isbnType);
+				$identificationCode->setValue($isbn)
+				$identificationCodeDao->insertObject($identificationCode);			
+			}
+
+		}
+
 		// Save the submission categories
 		$categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
 		$categoryDao->deletePublicationAssignments($publication->getId());
