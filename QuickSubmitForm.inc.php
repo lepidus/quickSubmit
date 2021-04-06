@@ -341,7 +341,6 @@ class QuickSubmitForm extends Form {
 		$publication->setData('licenseUrl', $this->getData('licenseUrl'));
 
 		// Set ISBN for the first book manuscript available.
-		// $publication->setData('isbn', $this->getData('isbn'));
 
 		if ($publication->getData('seriesId') !== (int) $this->getData('seriesId')) {
 			$publication->setData('seriesId', $this->getData('seriesId'));
@@ -388,7 +387,7 @@ class QuickSubmitForm extends Form {
 				$identificationCode = $identificationCodeDao->newDataObject();
 				$identificationCode->setPublicationFormatId($publicationFormat->getId());
 				$identificationCode->setCode($isbnType);
-				$identificationCode->setValue($isbn)
+				$identificationCode->setValue($isbn);
 				$identificationCodeDao->insertObject($identificationCode);			
 			}
 
