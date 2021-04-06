@@ -280,7 +280,6 @@ class QuickSubmitForm extends Form {
 			array(
 				'datePublished',
 				'licenseUrl',
-				'isbn',
 				'copyrightHolder',
 				'copyrightYear',
 				'seriesId',
@@ -340,8 +339,6 @@ class QuickSubmitForm extends Form {
 
 		$publication->setData('licenseUrl', $this->getData('licenseUrl'));
 
-		// Set ISBN for the first book manuscript available.
-
 		if ($publication->getData('seriesId') !== (int) $this->getData('seriesId')) {
 			$publication->setData('seriesId', $this->getData('seriesId'));
 		}
@@ -369,28 +366,6 @@ class QuickSubmitForm extends Form {
 					$chapterDao->updateObject($chapter);
 				}
 			}
-		}
-
-		if ($this->getData('isbn')) {
-			$isbn = preg_replace("/[^0-9]/", "", $this->getData('isbn'));
-
-			if (strlen($isbn) == 10) {
-				$isbnType = "02"; // ISBN10
-			}
-			else {
-				$isbnType = "15"; // ISBN13
-			}
-
-			$identificationCodeDao = DAORegistry::getDAO('IdentificationCodeDAO'); /* @var $identificationCodeDao IdentificationCodeDAO */
-
-			foreach ($publication->getData('publicationFormats') as $publicationFormat) {
-				$identificationCode = $identificationCodeDao->newDataObject();
-				$identificationCode->setPublicationFormatId($publicationFormat->getId());
-				$identificationCode->setCode($isbnType);
-				$identificationCode->setValue($isbn);
-				$identificationCodeDao->insertObject($identificationCode);			
-			}
-
 		}
 
 		// Save the submission categories

@@ -47,5 +47,9 @@ msgstr "Go to Submission"
 msgid "plugins.pubIds.doi.editor.doiObjectTypePublication"
 msgstr "Publication"
 
-msgid "plugins.importexport.quickSubmit.isbn"
-msgstr "ISBN"
+msgid "plugins.importexport.quickSubmit.assignChapterDoi"
+msgstr "Assign DOIs to chapters"
+
+msgid "plugins.importexport.quickSubmit.assignPublicationDoi"
+msgstr "Assign DOI to publication"
+

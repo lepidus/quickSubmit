@@ -30,10 +30,10 @@ msgid "plugins.importexport.quickSubmit.successReturn"
 msgstr "Palaa takaisin pikajulkaisulisäosaan."
 
 msgid "plugins.importexport.quickSubmit.cancel"
-msgstr "Submission cancelled"
+msgstr "Lisäys peruttu"
 
 msgid "plugins.importexport.quickSubmit.cancelDescription"
-msgstr "Lähetys on peruttu."
+msgstr "Lisäys on peruttu."
 
 msgid "plugins.importexport.quickSubmit.published"
 msgstr "Julkaistu"
@@ -47,7 +47,9 @@ msgstr "Siirry käsikirjoitukseen"
 msgid "plugins.pubIds.doi.editor.doiObjectTypePublication"
 msgstr "Julkaisu"
 
-msgid "plugins.importexport.quickSubmit.isbn"
-msgstr "ISBN"
+msgid "plugins.importexport.quickSubmit.assignChapterDoi"
+msgstr "Lisää DOI-tunnukset lukuihin"
 
+msgid "plugins.importexport.quickSubmit.assignPublicationDoi"
+msgstr "Lisää DOI-tunnus kirjaan"
 

@@ -108,12 +108,6 @@
 			{/fbvFormArea}			
 		{/if}
 
-		{fbvFormArea id="isbn"}
-			{fbvFormSection list="true" label="plugins.importexport.quickSubmit.isbn"}
-				{fbvElement type="text" id="isbn" value=$isbn}
-			{/fbvFormSection}
-		{/fbvFormArea}
-
 		{fbvFormArea id="permissions"}
 			{fbvFormSection list="true" label="submission.licenseURL"}
 				{fbvElement type="text" id="licenseUrl" value=$licenseUrl}
