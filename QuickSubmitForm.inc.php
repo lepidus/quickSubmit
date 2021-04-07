@@ -383,6 +383,28 @@ class QuickSubmitForm extends Form {
 			$publication = Services::get('publication')->publish($publication);
 		}
 
+
+		// Create a thumbnail for the cover image
+		if ($publication->getData('coverImage')) {
+
+			$supportedLocales = $this->_context->getSupportedSubmissionLocales();
+			foreach ($supportedLocales as $localeKey) {
+				if (!array_key_exists($localeKey, $publication->getData('coverImage'))) {
+					continue;
+				}
+				import('classes.file.PublicFileManager');
+				$publicFileManager = new \PublicFileManager();
+				$coverImage = $publication->getData('coverImage', $localeKey);
+				$coverImageFilePath = $publicFileManager->getContextFilesPath($this->_context->getId()) . '/' . $coverImage['uploadName'];
+				Services::get('publication')->makeThumbnail(
+					$coverImageFilePath,
+					Services::get('publication')->getThumbnailFileName($coverImage['uploadName']),
+					$this->_context->getData('coverThumbnailsMaxWidth'),
+					$this->_context->getData('coverThumbnailsMaxHeight')
+				);
+			}
+		}
+
 		// Update publication
 		$publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
 		$publicationDao->updateObject($publication);

@@ -34,7 +34,7 @@ class UploadImageForm extends Form {
 	/** @var $plugin QuickSubmitPlugin */
 	var $plugin;
 
-	/** @var $context Press */
+	/** @var $context Journal */
 	var $context;
 
 	/**
@@ -112,7 +112,7 @@ class UploadImageForm extends Form {
 	}
 
 	/**
-	 * An action to delete an monograph cover image.
+	 * An action to delete an article cover image.
 	 * @param $request PKPRequest
 	 * @return JSONMessage JSON object
 	 */
@@ -122,7 +122,7 @@ class UploadImageForm extends Form {
 		$publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
 		$file = $request->getUserVar('coverImage');
 
-		// Remove cover image and alt text from monograph settings
+		// Remove cover image and alt text from article settings
 		$locale = AppLocale::getLocale();
 		$this->publication->setData('coverImage', []);
 		$publicationDao->updateObject($this->publication);
@@ -139,10 +139,10 @@ class UploadImageForm extends Form {
 	}
 
 	/**
-	 * Save file image to Submission
-	 * @param $request Request.
+	 * @copydoc Form::execute()
 	 */
-	function execute($request) {
+	function execute(...$functionArgs) {
+		$request = Application::get()->getRequest();
 		$publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
 
 		$temporaryFile = $this->fetchTemporaryFile($request);
@@ -160,7 +160,7 @@ class UploadImageForm extends Form {
 			}
 			$locale = AppLocale::getLocale();
 
-			$newFileName = 'article_' . $this->submissionId . '_cover_' . $locale . $publicFileManager->getImageExtension($temporaryFile->getFileType());
+			$newFileName = 'book_' . $this->submissionId . '_cover_' . $locale . $publicFileManager->getImageExtension($temporaryFile->getFileType());
 
 			if ($publicFileManager->copyContextFile($this->context->getId(), $temporaryFile->getFilePath(), $newFileName)) {
 
@@ -268,4 +268,3 @@ class UploadImageForm extends Form {
 		return false;
 	}
 }
-
