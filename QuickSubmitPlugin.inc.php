@@ -222,18 +222,57 @@ class QuickSubmitPlugin extends ImportExportPlugin {
 		return $smarty->smartyUrl($params, $smarty);
 	}
 
-	/**
-	 * @copydoc PKPImportExportPlugin::usage
-	 */
-	public function usage($scriptName) {
-		fatalError('Not implemented');
-	}
+    /**
+     * @copydoc ImportExportPlugin::executeCLI
+     */
+    public function executeCLI($scriptName, &$args)
+    {
+        throw new BadMethodCallException();
+    }
 
-	/**
-	 * @copydoc PKPImportExportPlugin::executeCLI()
-	 */
-	public function executeCLI($scriptName, &$args) {
-		fatalError('Not implemented');
-	}
+    /**
+     * @copydoc ImportExportPlugin::usage
+     */
+    public function usage($scriptName)
+    {
+        throw new BadMethodCallException();
+    }
+
+    /**
+     * Define the appropriate import filter given the imported XML file path
+     *
+     * @param string $xmlFile
+     *
+     * @return array Containing the filter and the xmlString of the imported file
+     */
+    public function getImportFilter($xmlFile)
+    {
+        throw new BadMethodCallException();
+    }
+
+    /**
+     * Define the appropriate export filter given the export operation
+     *
+     * @param string $exportType
+     *
+     * @return string
+     */
+    public function getExportFilter($exportType)
+    {
+        throw new BadMethodCallException();
+    }
+
+    /**
+     * Get the application specific deployment object
+     *
+     * @param Context $context
+     * @param User $user
+     *
+     * @return PKPImportExportDeployment
+     */
+    public function getAppSpecificDeployment($context, $user)
+    {
+        throw new BadMethodCallException();
+    }
 }
 
