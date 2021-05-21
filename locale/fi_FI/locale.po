@@ -49,3 +49,6 @@ msgstr "Lähetys on peruttu."
 
 msgid "plugins.importexport.quickSubmit.cancel"
 msgstr "Lähettäminen peruttu"
+
+msgid "plugins.importexport.quickSubmit.assignPublicationDoi"
+msgstr "Lisää DOI"
