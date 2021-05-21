@@ -18,10 +18,10 @@
 		// Attach the form handler.
 		$('#quickSubmitForm').pkpHandler('$.pkp.plugins.importexport.quickSubmit.js.QuickSubmitFormHandler');
 	{rdelim});
-	
+
 </script>
 
-<div id="quickSubmitPlugin" class="pkp_page_content pkp_pageQuickSubmit"> 
+<div id="quickSubmitPlugin" class="pkp_page_content pkp_pageQuickSubmit">
 	<p>{translate key="plugins.importexport.quickSubmit.descriptionLong"}</p>
 
 	<form class="pkp_form" id="quickSubmitForm" method="post" action="{plugin_url path="saveSubmit"}">
@@ -72,6 +72,14 @@
 
 		{capture assign="representationsGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="grid.articleGalleys.ArticleGalleyGridHandler" op="fetchGrid" submissionId=$submissionId publicationId=$publicationId escape=false}{/capture}
 		{load_url_in_div id="formatsGridContainer"|uniqid url=$representationsGridUrl}
+
+		{if $assignPublicationDoi}
+			{fbvFormArea id="addDois"}
+				{fbvFormSection list="true"}
+					{fbvElement type="checkbox" id="assignPublicationDoi" value="1" checked=$assignPublicationDoi label="plugins.importexport.quickSubmit.assignPublicationDoi"}
+				{/fbvFormSection}
+			{/fbvFormArea}
+		{/if}
 
 		{* Publishing article section *}
 		{if $hasIssues}

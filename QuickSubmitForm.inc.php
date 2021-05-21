@@ -164,6 +164,17 @@ class QuickSubmitForm extends Form {
 			'abstractsRequired' => !$section->getAbstractsNotRequired(),
 		));
 
+		// DOI support
+		$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
+		$doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
+		if ($doiPubIdPlugin && $doiPubIdPlugin->getSetting($this->_context->getId(), 'doiPrefix')){
+			if ($doiPubIdPlugin->getSetting($this->_context->getId(), 'enablePublicationDoi')) {
+				$templateMgr->assign('assignPublicationDoi', true);
+			}
+		}
+		// DOI support
+
+
 		// Process entered tagit fields values for redisplay.
 		// @see PKPSubmissionHandler::saveStep
 		$tagitKeywords = $this->getData('keywords');
@@ -282,6 +293,7 @@ class QuickSubmitForm extends Form {
 				'sectionId',
 				'submissionId',
 				'articleStatus',
+				'assignPublicationDoi',
 				'locale'
 			)
 		);
@@ -366,6 +378,20 @@ class QuickSubmitForm extends Form {
 				$publication->setData('seq', $maxSequence + 1);
 			}
 
+			// Set DOIs
+			if ($this->getData('assignPublicationDoi') == 1){
+				$pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
+				$doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
+				$pubIdPrefix = $doiPubIdPlugin->getSetting($this->_context->getId(), 'doiPrefix');
+				$suffixPatternsFieldNames = $doiPubIdPlugin->getSuffixPatternsFieldNames();
+				$pubIdSuffix = $doiPubIdPlugin->getSetting($this->_context->getId(), $suffixPatternsFieldNames[$doiPubIdPlugin->getPubObjectType($publication)]);
+				$pubIdSuffix = PKPString::regexp_replace('/%j/', PKPString::regexp_replace('/[^A-Za-z0-9]/', '', PKPString::strtolower($this->_context->getAcronym($this->_context->getPrimaryLocale()))), $pubIdSuffix);
+				$pubIdSuffix = PKPString::regexp_replace('/%a/', $this->_submission->getId(), $pubIdSuffix);
+				$pubId = $doiPubIdPlugin->constructPubId($pubIdPrefix, $pubIdSuffix, $this->_context->getId());
+				$publication->setData('pub-id::doi', $pubId);
+			}
+			// Set DOIs
+
 			$publication = Services::get('publication')->publish($publication);
 
 			// If this submission's issue uses custom section ordering and this is the first
@@ -425,5 +451,6 @@ class QuickSubmitForm extends Form {
 
 		return $issueOptions;
 	}
+
 }
 
