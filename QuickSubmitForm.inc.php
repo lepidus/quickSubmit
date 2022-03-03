@@ -50,7 +50,8 @@ class QuickSubmitForm extends Form {
 		}
 
 		if ($submissionId = $request->getUserVar('submissionId')) {
-			$submissionDao = Application::getSubmissionDAO();
+			/** @var SubmissionDAO $submissionDao */
+			$submissionDao = DAORegistry::getDAO('SubmissionDAO');
 			$this->_submission = $submissionDao->getById($submissionId);
 			if ($this->_submission->getContextId() != $this->_context->getId()) throw new Exeption('Submission not in context!');
 			$this->_submission->setLocale($this->getDefaultFormLocale());
@@ -222,7 +223,8 @@ class QuickSubmitForm extends Form {
 			$seriesOptions = $seriesDao->getTitlesByContextId($this->_context->getId());
 
 			// Create and insert a new submission
-			$submissionDao = Application::getSubmissionDAO();
+			/** @var SubmissionDAO $submissionDao */
+			$submissionDao = DAORegistry::getDAO('SubmissionDAO');
 			$this->_submission = $submissionDao->newDataObject();
 			$this->_submission->setContextId($this->_context->getId());
 			$this->_submission->setStatus(STATUS_QUEUED);
@@ -298,7 +300,8 @@ class QuickSubmitForm extends Form {
 	 * cancel submit
 	 */
 	function cancel() {
-		$submissionDao = Application::getSubmissionDAO();
+		/** @var SubmissionDAO $submissionDao */
+		$submissionDao = DAORegistry::getDAO('SubmissionDAO');
 		$submission = $submissionDao->getById($this->getData('submissionId'));
 		if ($this->_submission->getContextId() != $this->_context->getId()) throw new Exeption('Submission not in context!');
 		if ($submission) $submissionDao->deleteById($submission->getId());
@@ -420,7 +423,7 @@ class QuickSubmitForm extends Form {
 	function getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $pubObject, $context, $submission, $chapter){
 		switch ($suffixGenerationStrategy) {
 			case 'customId':
-				$pubIdSuffix = $pubObject->getData($suffixFieldName);
+				$pubIdSuffix = $pubObject->getData('doiSuffix');
 				break;
 
 			case 'pattern':
