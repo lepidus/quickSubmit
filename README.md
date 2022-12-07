@@ -1,7 +1,7 @@
 # OMP QuickSubmit Plugin
 
 - OMP QuickSubmit Plugin
-- Version: 1.0.5
+- Version: 1.0.6
 
 About
 -----
@@ -15,7 +15,7 @@ This plugin is licensed under the GNU General Public License v3. See the file `L
 
 System Requirements
 -------------------
-OMP 3.2.0 or greater.
+OMP 3.3.0.
 
 Note
 ----

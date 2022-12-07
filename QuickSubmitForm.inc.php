@@ -50,12 +50,24 @@ class QuickSubmitForm extends Form {
 		}
 
 		if ($submissionId = $request->getUserVar('submissionId')) {
-			/** @var SubmissionDAO $submissionDao */
-			$submissionDao = DAORegistry::getDAO('SubmissionDAO');
+			$submissionDao = DAORegistry::getDAO('SubmissionDAO'); /* @var SubmissionDAO $submissionDao */
+			$publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
+
 			$this->_submission = $submissionDao->getById($submissionId);
 			if ($this->_submission->getContextId() != $this->_context->getId()) throw new Exeption('Submission not in context!');
+
 			$this->_submission->setLocale($this->getDefaultFormLocale());
+			$publication = $this->_submission->getCurrentPublication();
+			$publication->setData('locale', $this->getDefaultFormLocale());
+			$publication->setData('language', PKPString::substr($this->getDefaultFormLocale(), 0, 2));
+
+			$seriesId = $request->getUserVar('seriesId');
+			if (!empty($seriesId)) {
+				$this->_submission->setSeriesId($seriesId);
+			}
+
 			$submissionDao->updateObject($this->_submission);
+			$publicationDao->updateObject($publication);
 
 			$this->_metadataFormImplem->addChecks($this->_submission);
 		}
@@ -160,42 +172,19 @@ class QuickSubmitForm extends Form {
 		// DOI support
 
 		// Categories list
-		$assignedCategories = [];
 		$categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
-
-		$items = [];
-		$categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
+		$categoriesOptions = [];
 		$categories = $categoryDao->getByContextId($this->_context->getId())->toAssociativeArray();
 		foreach ($categories as $category) {
 			$title = $category->getLocalizedTitle();
 			if ($category->getParentId()) {
 				$title = $categories[$category->getParentId()]->getLocalizedTitle() . ' > ' . $title;
 			}
-			$items[] = [
-				'id' => (int) $category->getId(),
-				'title' => $title,
-			];
+			$categoriesOptions[(int) $category->getId()] = $title;
 		}
-		$categoriesList = new \PKP\components\listPanels\ListPanel(
-			'categories',
-			__('grid.category.categories'),
-			[
-				'canSelect' => true,
-				'items' => $items,
-				'itemsMax' => count($items),
-				'selected' => $assignedCategories,
-				'selectorName' => 'categories[]',
-			]
-		);
 
 		$templateMgr->assign(array(
-			'assignedCategories' => $assignedCategories,
-			'hasCategories' => !empty($categoriesList->items),
-			'categoriesListData' => [
-				'components' => [
-					'categories' => $categoriesList->getConfig(),
-				]
-			]
+			'categoriesOptions' => $categoriesOptions,
 		));
 
 		parent::display($request, $template);
@@ -265,6 +254,21 @@ class QuickSubmitForm extends Form {
 					break;
 				}
 			}
+
+			// Pre-fill the copyright information fields from setup (#7236)
+			$this->_data['licenseUrl'] = $this->_context->getData('licenseUrl');
+			switch ($this->_context->getData('copyrightHolderType')) {
+			case 'author':
+				// The author has not been entered yet; let the user fill it in.
+				break;
+			case 'context':
+				$this->_data['copyrightHolder'] = $this->_context->getData('name');
+				break;
+			case 'other':
+				$this->_data['copyrightHolder'] = $this->_context->getData('copyrightHolderOther');
+				break;
+			}
+			$this->_data['copyrightYear'] = date('Y');
 
 			// Assign the user author to the stage
 			$stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');

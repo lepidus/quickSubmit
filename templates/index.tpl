@@ -21,7 +21,6 @@
 			// Attach the form handler.
 			$('#quickSubmitForm').pkpHandler('$.pkp.plugins.importexport.quickSubmit.js.QuickSubmitFormHandler');
 		{rdelim});
-
 	</script>
 
 	<div id="quickSubmitPlugin" class="app__contentPanel pkp_pageQuickSubmit">
@@ -66,7 +65,17 @@
 
 			{include file="submission/form/series.tpl" readOnly=$formParams.readOnly}
 
-			{include file="core:submission/form/categories.tpl"}
+			{if count($categoriesOptions)}
+				{fbvFormSection list=true title="grid.category.categories"}
+					{foreach from=$categoriesOptions item="category" key="id"}
+						{if $categories}
+							{fbvElement type="checkbox" id="categories[]" value=$id checked=in_array($id, $categories) label=$category|escape translate=false}
+						{else}
+							{fbvElement type="checkbox" id="categories[]" value=$id label=$category|escape translate=false}
+						{/if}
+					{/foreach}
+				{/fbvFormSection}
+			{/if}
 
 			{include file="core:submission/submissionMetadataFormTitleFields.tpl"}
 
