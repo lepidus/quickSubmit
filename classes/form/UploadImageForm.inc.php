@@ -76,7 +76,7 @@ class UploadImageForm extends Form {
 		$templateMgr->assign('submissionId', $this->submissionId);
 
 		$locale = AppLocale::getLocale();
-		$coverImage = $this->submission->getCoverImage($locale);
+		$coverImage = $this->submission->getCurrentPublication()->getLocalizedData('coverImage') ?? '';
 
 		if ($coverImage) {
 			import('lib.pkp.classes.linkAction.LinkAction');
@@ -88,7 +88,7 @@ class UploadImageForm extends Form {
 					$this->request->getSession(),
 					__('common.confirmDelete'), null,
 					$router->url($this->request, null, null, 'importexport', array('plugin', 'QuickSubmitPlugin', 'deleteCoverImage'), array(
-						'coverImage' => $coverImage,
+						'coverImage' => $coverImage['uploadName'],
 						'submissionId' => $this->submission->getId(),
 						'stageId' => WORKFLOW_STAGE_ID_PRODUCTION,
 					)),
@@ -102,6 +102,7 @@ class UploadImageForm extends Form {
 
 		$this->setData('coverImage', $coverImage);
 		$this->setData('imageAltText', $this->submission->getCoverImageAltText($locale));
+		$this->setData('coverImageName', $coverImage['uploadName'] ?? '');
 	}
 
 	/**

@@ -39,12 +39,6 @@
 			{csrf}
 			{include file="controllers/notification/inPlaceNotification.tpl" notificationId="quickSubmitFormNotification"}
 
-			{fbvFormSection label="monograph.coverImage" class=$wizardClass}
-				<div id="{$openCoverImageLinkAction->getId()}" class="pkp_linkActions">
-					{include file="linkAction/linkAction.tpl" action=$openCoverImageLinkAction contextId="quickSubmitForm"}
-				</div>
-			{/fbvFormSection}
-
 			{* There is only one supported submission locale; choose it invisibly *}
 			{if count($supportedSubmissionLocaleNames) == 1}
 				{foreach from=$supportedSubmissionLocaleNames item=localeName key=locale}
@@ -57,6 +51,17 @@
 					{fbvElement label="submission.submit.submissionLocaleDescription" required="true" type="select" id="locale" from=$supportedSubmissionLocaleNames selected=$locale translate=false}
 				{/fbvFormSection}
 			{/if}
+
+			{fbvFormSection label="monograph.coverImage" class=$wizardClass}
+				{if $coverImageName != ''}
+					<div class="img">
+						<img src="{$publicFilesDir}/{$coverImageName|escape:"url"}{'?'|uniqid}">
+					</div>
+				{/if}
+				<div id="{$openCoverImageLinkAction->getId()}" class="pkp_linkActions">
+					{include file="linkAction/linkAction.tpl" action=$openCoverImageLinkAction contextId="quickSubmitForm"}
+				</div>
+			{/fbvFormSection}
 
 			{fbvFormSection list="true" label="submission.workflowType" description="submission.workflowType.description"}
 				{fbvElement type="radio" name="workType" id="isEditedVolume-0" value=$smarty.const.WORK_TYPE_AUTHORED_WORK checked=$workType|compare:$smarty.const.WORK_TYPE_EDITED_VOLUME:false:true label="submission.workflowType.authoredWork"}

@@ -121,17 +121,21 @@ class QuickSubmitForm extends Form {
 
 		// Cover image delete link action
 		$locale = AppLocale::getLocale();
+		$publication = $this->_submission->getCurrentPublication();
 
 		import('lib.pkp.classes.linkAction.LinkAction');
 		import('lib.pkp.classes.linkAction.request.AjaxModal');
 		$router = $this->_request->getRouter();
+		$coverImage = $publication->getLocalizedData('coverImage') ?? '';
+		$coverImageName = $coverImage['uploadName'] ?? '';
+
 		$templateMgr->assign('openCoverImageLinkAction', new LinkAction(
 			'uploadFile',
 			new AjaxModal(
 				$router->url($this->_request, null, null, 'importexport', array('plugin', 'QuickSubmitPlugin', 'uploadCoverImage'), array(
-					'coverImage' => $this->_submission->getCoverImage($locale),
+					'coverImage' => $coverImageName,
 					'submissionId' => $this->_submission->getId(),
-					'publicationId' => $this->_submission->getCurrentPublication()->getId(),
+					'publicationId' => $publication->getId(),
 					// This action can be performed during any stage,
 					// but we have to provide a stage id to make calls
 					// to IssueEntryTabHandler
@@ -144,6 +148,8 @@ class QuickSubmitForm extends Form {
 			'add'
 		));
 
+		$templateMgr->assign('coverImageName', $coverImageName);
+
 		// Get series for this context
 		$seriesDao = DAORegistry::getDAO('SeriesDAO');
 		$seriesOptions = array('0' => '') + $seriesDao->getTitlesByContextId($this->_context->getId());
@@ -151,9 +157,9 @@ class QuickSubmitForm extends Form {
 
 		$templateMgr->assign(array(
 			'submission' => $this->_submission,
-			'publication' => $this->_submission->getCurrentPublication(),
+			'publication' => $publication,
 			'locale' => $this->getDefaultFormLocale(),
-			'publicationId' => $this->_submission->getCurrentPublication()->getId(),
+			'publicationId' => $publication->getId(),
 			'licenseUrl' => $this->_context->getData('licenseUrl'),
 			'copyrightHolderType' => $this->_context->getData('copyrightHolderType')
 		));
@@ -328,8 +334,8 @@ class QuickSubmitForm extends Form {
 
 		$submissionDao = DAORegistry::getDAO('SubmissionDAO'); /* @var $submissionDao SubmissionDAO */
 		$submissionDao->updateObject($this->_submission);
-
 		$this->_submission = $submissionDao->getById($this->_submission->getId());
+
 		$publication = $this->_submission->getCurrentPublication();
 
 		if ($this->getData('datePublished')){
@@ -388,28 +394,6 @@ class QuickSubmitForm extends Form {
 		if ($this->getData('submissionStatus') == 1) {
 			$publication->setData('datePublished', $this->getData('datePublished'));
 			$publication = Services::get('publication')->publish($publication);
-		}
-
-
-		// Create a thumbnail for the cover image
-		if ($publication->getData('coverImage')) {
-
-			$supportedLocales = $this->_context->getSupportedSubmissionLocales();
-			foreach ($supportedLocales as $localeKey) {
-				if (!array_key_exists($localeKey, $publication->getData('coverImage'))) {
-					continue;
-				}
-				import('classes.file.PublicFileManager');
-				$publicFileManager = new \PublicFileManager();
-				$coverImage = $publication->getData('coverImage', $localeKey);
-				$coverImageFilePath = $publicFileManager->getContextFilesPath($this->_context->getId()) . '/' . $coverImage['uploadName'];
-				Services::get('publication')->makeThumbnail(
-					$coverImageFilePath,
-					Services::get('publication')->getThumbnailFileName($coverImage['uploadName']),
-					$this->_context->getData('coverThumbnailsMaxWidth'),
-					$this->_context->getData('coverThumbnailsMaxHeight')
-				);
-			}
 		}
 
 		// Update publication
