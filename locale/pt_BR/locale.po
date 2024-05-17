@@ -7,49 +7,50 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-03-17T18:13:56+00:00\n"
-"PO-Revision-Date: 2020-03-17T18:13:56+00:00\n"
-"Language: fi\n"
+"POT-Creation-Date: 2020-01-17T18:13:59+00:00\n"
+"PO-Revision-Date: 2021-02-09 08:32+0000\n"
+"Language: pt_BR\n"
 
 msgid "plugins.importexport.quickSubmit.displayName"
-msgstr "OMP-pikajulkaisulisäosa"
+msgstr "Submissão rápida OMP"
 
 msgid "plugins.importexport.quickSubmit.description"
-msgstr "Lisäosa kirjojen nopeaan julkaisuun"
+msgstr "Plugin de submissão em 1 passo"
 
 msgid "plugins.importexport.quickSubmit.descriptionLong"
-msgstr "Tällä lisäosalla voit lisätä nopeasti kirjoja tuotantovaiheeseen tai suoraan julkaistavaksi."
+msgstr ""
+"Esse plugin lhe permite inserir rapidamente submissões completas para o "
+"estágio de produção ou diretamente para um catálogo."
 
 msgid "plugins.importexport.quickSubmit.success"
-msgstr "Kirja lisätty"
+msgstr "Livro incluído"
 
 msgid "plugins.importexport.quickSubmit.successDescription"
-msgstr "Kirja luotiin onnistuneesti."
+msgstr "Livro criado com sucesso."
 
 msgid "plugins.importexport.quickSubmit.successReturn"
-msgstr "Palaa takaisin pikajulkaisulisäosaan."
+msgstr "Voltar à submissão rápida."
 
 msgid "plugins.importexport.quickSubmit.cancel"
-msgstr "Lisäys peruttu"
+msgstr "Submissão cancelada"
 
 msgid "plugins.importexport.quickSubmit.cancelDescription"
-msgstr "Lisäys on peruttu."
+msgstr "A submissão foi cancelada."
 
 msgid "plugins.importexport.quickSubmit.published"
-msgstr "Julkaistu"
+msgstr "Publicado"
 
 msgid "plugins.importexport.quickSubmit.unpublished"
-msgstr "Julkaisematon"
+msgstr "Não publicado"
 
 msgid "plugins.importexport.quickSubmit.goToSubmission"
-msgstr "Siirry käsikirjoitukseen"
+msgstr "Ir para Submissão"
 
 msgid "plugins.pubIds.doi.editor.doiObjectTypePublication"
-msgstr "Julkaisu"
+msgstr "Publicação"
 
 msgid "plugins.importexport.quickSubmit.assignChapterDoi"
-msgstr "Lisää DOI-tunnukset lukuihin"
+msgstr "Designar DOIs para o capítulo"
 
 msgid "plugins.importexport.quickSubmit.assignPublicationDoi"
-msgstr "Lisää DOI-tunnus kirjaan"
-
+msgstr "Designar DOI para a publicação"
