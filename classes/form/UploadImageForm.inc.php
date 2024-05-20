@@ -8,6 +8,7 @@
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class UploadImageForm
+ *
  * @ingroup plugins_importexport_quicksubmit_classes_form
  *
  * @brief Form for upload an image.
@@ -22,26 +23,27 @@ class UploadImageForm extends Form
     /** string Setting key that will be associated with the uploaded file. */
     public $_fileSettingName;
 
-    /** @var $request object */
+    /** @var object $request */
     public $request;
 
-    /** @var $submissionId int */
+    /** @var int $submissionId */
     public $submissionId;
 
-    /** @var $submission Submission */
+    /** @var Submission $submission */
     public $submission;
 
-    /** @var $publication Publication */
+    /** @var Publication $publication */
     public $publication;
 
-    /** @var $plugin QuickSubmitPlugin */
+    /** @var QuickSubmitPlugin $plugin */
     public $plugin;
 
-    /** @var $context Journal */
+    /** @var Press $context */
     public $context;
 
     /**
      * Constructor.
+     *
      * @param $plugin object
      * @param $request object
      */
@@ -72,7 +74,7 @@ class UploadImageForm extends Form
      */
     public function getLocaleFieldNames()
     {
-        return array('imageAltText');
+        return ['imageAltText'];
     }
 
     /**
@@ -96,11 +98,11 @@ class UploadImageForm extends Form
                     $this->request->getSession(),
                     __('common.confirmDelete'),
                     null,
-                    $router->url($this->request, null, null, 'importexport', array('plugin', 'QuickSubmitPlugin', 'deleteCoverImage'), array(
+                    $router->url($this->request, null, null, 'importexport', ['plugin', 'QuickSubmitPlugin', 'deleteCoverImage'], [
                         'coverImage' => $coverImage['uploadName'],
                         'submissionId' => $this->submission->getId(),
                         'stageId' => WORKFLOW_STAGE_ID_PRODUCTION,
-                    )),
+                    ]),
                     'modal_delete'
                 ),
                 __('common.delete'),
@@ -119,12 +121,14 @@ class UploadImageForm extends Form
      */
     public function readInputData()
     {
-        $this->readUserVars(array('imageAltText', 'temporaryFileId'));
+        $this->readUserVars(['imageAltText', 'temporaryFileId']);
     }
 
     /**
      * An action to delete an article cover image.
+     *
      * @param $request PKPRequest
+     *
      * @return JSONMessage JSON object
      */
     public function deleteCoverImage($request)
@@ -135,7 +139,7 @@ class UploadImageForm extends Form
         $file = $request->getUserVar('coverImage');
 
         // Remove cover image and alt text from article settings
-        $locale = AppLocale::getLocale();
+        $locale = Locale::getLocale();
         $this->publication->setData('coverImage', []);
         $publicationDao->updateObject($this->publication);
 
@@ -156,10 +160,9 @@ class UploadImageForm extends Form
     public function execute(...$functionArgs)
     {
         $request = Application::get()->getRequest();
-        $publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
 
         $temporaryFile = $this->fetchTemporaryFile($request);
-        $locale = AppLocale::getLocale();
+        $locale = Locale::getLocale();
         $coverImage = $this->publication->getData('coverImage');
 
         import('classes.file.PublicFileManager');
@@ -171,7 +174,7 @@ class UploadImageForm extends Form
             if (!$extension) {
                 return false;
             }
-            $locale = AppLocale::getLocale();
+            $locale = Locale::getLocale();
 
             $newFileName = 'book_' . $this->submissionId . '_cover_' . $locale . $publicFileManager->getImageExtension($temporaryFile->getFileType());
 
@@ -181,7 +184,7 @@ class UploadImageForm extends Form
                     'altText' => $this->getData('imageAltText'),
                     'uploadName' => $newFileName,
                 ], $locale);
-                $publicationDao->updateObject($this->publication);
+                Repo::publication()->edit($this->publication, []);
 
                 // Clean up the temporary file.
                 $this->removeTemporaryFile($request);
@@ -192,15 +195,15 @@ class UploadImageForm extends Form
             $coverImage = $this->publication->getData('coverImage');
             $coverImage[$locale]['altText'] = $this->getData('imageAltText');
             $this->publication->setData('coverImage', $coverImage);
-            $publicationDao->updateObject($this->publication);
+            Repo::publication()->edit($this->publication, []);
             return DAO::getDataChangedEvent();
         }
         return new JSONMessage(false, __('common.uploadFailed'));
-
     }
 
     /**
      * Get the image that this form will upload a file to.
+     *
      * @return string
      */
     public function getFileSettingName()
@@ -210,7 +213,6 @@ class UploadImageForm extends Form
 
     /**
      * Set the image that this form will upload a file to.
-     * @param $image string
      */
     public function setFileSettingName($fileSettingName)
     {
@@ -223,15 +225,17 @@ class UploadImageForm extends Form
     //
     /**
      * @see Form::fetch()
+     *
      * @param $params template parameters
+     * @param null|mixed $template
      */
     public function fetch($request, $template = null, $display = false, $params = null)
     {
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign(array(
+        $templateMgr->assign([
             'fileSettingName' => $this->getFileSettingName(),
             'fileType' => 'image',
-        ));
+        ]);
 
         return parent::fetch($request, $template, $display);
     }
@@ -242,7 +246,9 @@ class UploadImageForm extends Form
     //
     /**
      * Fecth the temporary file.
+     *
      * @param $request Request
+     *
      * @return TemporaryFile
      */
     public function fetchTemporaryFile($request)
@@ -259,6 +265,7 @@ class UploadImageForm extends Form
 
     /**
      * Clean temporary file.
+     *
      * @param $request Request
      */
     public function removeTemporaryFile($request)
@@ -272,6 +279,7 @@ class UploadImageForm extends Form
 
     /**
      * Upload a temporary file.
+     *
      * @param $request Request
      */
     public function uploadFile($request)
