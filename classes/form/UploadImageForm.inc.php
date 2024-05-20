@@ -15,6 +15,7 @@
  */
 
 use APP\facades\Repo;
+use PKP\core\JSONMessage;
 use PKP\facades\Locale;
 use PKP\form\Form;
 
@@ -135,13 +136,11 @@ class UploadImageForm extends Form
     {
         assert($request->getUserVar('coverImage') != '' && $request->getUserVar('submissionId') != '');
 
-        $publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
         $file = $request->getUserVar('coverImage');
 
         // Remove cover image and alt text from article settings
         $locale = Locale::getLocale();
-        $this->publication->setData('coverImage', []);
-        $publicationDao->updateObject($this->publication);
+        Repo::publication()->edit($this->publication, ['coverImage' => []]);
 
         // Remove the file
         $publicFileManager = new PublicFileManager();
