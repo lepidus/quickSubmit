@@ -8,17 +8,21 @@
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class QuickSubmitPlugin
+ *
  * @ingroup plugins_importexport_quickSubmit
  *
  * @brief Quick Submit one-page submission plugin
  */
 
+use BadMethodCallException;
 use PKP\core\JSONMessage;
 
 class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 {
     /**
      * @copydoc Plugin::register()
+     *
+     * @param null|mixed $mainContextId
      */
     public function register($category, $path, $mainContextId = null)
     {
@@ -58,7 +62,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
     public function display($args, $request)
     {
         $templateMgr = TemplateManager::getManager();
-        $templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
+        $templateMgr->registerPlugin('function', 'plugin_url', [$this, 'smartyPluginUrl']);
         $templateMgr->assign('quickSubmitPlugin', $this);
 
         switch (array_shift($args)) {
@@ -91,6 +95,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Cancels the submission
+     *
      * @param $request Request
      */
     protected function _cancelSubmit($request)
@@ -105,7 +110,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
         $notificationContent = __('notification.removedSubmission');
         $currentUser = $request->getUser();
         $notificationMgr = new NotificationManager();
-        $notificationMgr->createTrivialNotification($currentUser->getId(), NOTIFICATION_TYPE_SUCCESS, array('contents' => $notificationContent));
+        $notificationMgr->createTrivialNotification($currentUser->getId(), NOTIFICATION_TYPE_SUCCESS, ['contents' => $notificationContent]);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->display($this->getTemplateResource('submitCancel.tpl'));
@@ -113,7 +118,9 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Show the upload image form.
+     *
      * @param $request Request
+     *
      * @return JSONMessage JSON object
      */
     protected function _showFileUploadForm($request)
@@ -126,7 +133,9 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Upload the image to a temporary file
+     *
      * @param $request Request
+     *
      * @return JSONMessage JSON object
      */
     protected function _uploadImage($request)
@@ -138,9 +147,9 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
         $temporaryFileId = $imageUploadForm->uploadFile($request);
         if ($temporaryFileId) {
             $json = new JSONMessage(true);
-            $json->setAdditionalAttributes(array(
+            $json->setAdditionalAttributes([
                 'temporaryFileId' => $temporaryFileId
-            ));
+            ]);
             return $json;
         } else {
             return new JSONMessage(false, __('common.uploadFailed'));
@@ -149,7 +158,9 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Save the new image file.
+     *
      * @param $request Request.
+     *
      * @return JSONMessage JSON object
      */
     protected function _saveUploadedImage($request)
@@ -162,7 +173,9 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Delete the uploaded image
+     *
      * @param $request Request.
+     *
      * @return JSONMessage JSON object
      */
     protected function _deleteUploadedImage($request)
@@ -175,6 +188,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Save the submitted form
+     *
      * @param $request Request.
      */
     protected function _saveSubmit($request)
@@ -183,12 +197,12 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
         $this->import('QuickSubmitForm');
         $form = new QuickSubmitForm($this, $request);
         $form->readInputData();
-        if($form->validate()) {
+        if ($form->validate()) {
             $form->execute();
-            $templateMgr->assign(array(
+            $templateMgr->assign([
                 'submissionId' => $form->getSubmission()->getId(),
                 'stageId' => WORKFLOW_STAGE_ID_PRODUCTION,
-            ));
+            ]);
             $templateMgr->display($this->getTemplateResource('submitSuccess.tpl'));
         } else {
             $form->display($request);
@@ -197,6 +211,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 
     /**
      * Reloads the form
+     *
      * @param $request Request.
      */
     protected function _reloadForm($request)
@@ -213,17 +228,17 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
      */
     public function smartyPluginUrl($params, $smarty)
     {
-        $path = array('plugin',$this->getName());
+        $path = ['plugin',$this->getName()];
         if (is_array($params['path'])) {
             $params['path'] = array_merge($path, $params['path']);
         } elseif (!empty($params['path'])) {
-            $params['path'] = array_merge($path, array($params['path']));
+            $params['path'] = array_merge($path, [$params['path']]);
         } else {
             $params['path'] = $path;
         }
 
         if (!empty($params['id'])) {
-            $params['path'] = array_merge($params['path'], array($params['id']));
+            $params['path'] = array_merge($params['path'], [$params['id']]);
             unset($params['id']);
         }
         return $smarty->smartyUrl($params, $smarty);
