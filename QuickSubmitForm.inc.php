@@ -8,6 +8,7 @@
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class QuickSubmitForm
+ *
  * @ingroup plugins_importexport_quickSubmit
  *
  * @brief Form for QuickSubmit one-page submission plugin
@@ -37,6 +38,7 @@ class QuickSubmitForm extends Form
 
     /**
      * Constructor
+     *
      * @param $plugin object
      * @param $request object
      */
@@ -50,15 +52,12 @@ class QuickSubmitForm extends Form
         $this->_metadataForm = new SubmissionMetadataForm($this);
 
         $locale = $request->getUserVar('locale');
-        if ($locale && ($locale != AppLocale::getLocale())) {
+        if ($locale && ($locale != Locale::getLocale())) {
             $this->setDefaultFormLocale($locale);
         }
 
         if ($submissionId = $request->getUserVar('submissionId')) {
-            $submissionDao = DAORegistry::getDAO('SubmissionDAO'); /* @var SubmissionDAO $submissionDao */
-            $publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
-
-            $this->_submission = $submissionDao->getById($submissionId);
+            $this->_submission = Repo::submission()->get($submissionId);
             if ($this->_submission->getContextId() != $this->_context->getId()) {
                 throw new Exeption('Submission not in context!');
             }
@@ -73,8 +72,8 @@ class QuickSubmitForm extends Form
                 $this->_submission->setSeriesId($seriesId);
             }
 
-            $submissionDao->updateObject($this->_submission);
-            $publicationDao->updateObject($publication);
+            Repo::submission()->edit($this->_submission, []);
+            Repo::publication()->edit($publication, []);
 
             $this->_metadataForm->addChecks($this->_submission);
         }
@@ -85,7 +84,7 @@ class QuickSubmitForm extends Form
         // Validation checks for this form
         $supportedSubmissionLocales = $this->_context->getSupportedSubmissionLocales();
         if (!is_array($supportedSubmissionLocales) || count($supportedSubmissionLocales) < 1) {
-            $supportedSubmissionLocales = array($this->_context->getPrimaryLocale());
+            $supportedSubmissionLocales = [$this->_context->getPrimaryLocale()];
         }
         $this->addCheck(new \PKP\form\validation\FormValidatorInSet($this, 'locale', 'required', 'submission.submit.form.localeRequired', $supportedSubmissionLocales));
 
@@ -94,6 +93,7 @@ class QuickSubmitForm extends Form
 
     /**
      * Get the submission associated with the form.
+     *
      * @return Submission
      */
     public function getSubmission()
@@ -103,6 +103,7 @@ class QuickSubmitForm extends Form
 
     /**
      * Get the names of fields for which data should be localized
+     *
      * @return array
      */
     public function getLocaleFieldNames()
@@ -112,6 +113,9 @@ class QuickSubmitForm extends Form
 
     /**
      * Display the form.
+     *
+     * @param null|mixed $request
+     * @param null|mixed $template
      */
     public function display($request = null, $template = null)
     {
@@ -124,10 +128,10 @@ class QuickSubmitForm extends Form
 
         // Tell the form what fields are enabled (and which of those are required)
         foreach (Application::getMetadataFields() as $field) {
-            $templateMgr->assign(array(
-                $field . 'Enabled' => in_array($this->_context->getData($field), array(METADATA_ENABLE, METADATA_REQUEST, METADATA_REQUIRE)),
+            $templateMgr->assign([
+                $field . 'Enabled' => in_array($this->_context->getData($field), [METADATA_ENABLE, METADATA_REQUEST, METADATA_REQUIRE]),
                 $field . 'Required' => $this->_context->getData($field) === METADATA_REQUIRE,
-            ));
+            ]);
         }
 
         // Cover image delete link action
@@ -143,7 +147,7 @@ class QuickSubmitForm extends Form
         $templateMgr->assign('openCoverImageLinkAction', new LinkAction(
             'uploadFile',
             new AjaxModal(
-                $router->url($this->_request, null, null, 'importexport', array('plugin', 'QuickSubmitPlugin', 'uploadCoverImage'), array(
+                $router->url($this->_request, null, null, 'importexport', ['plugin', 'QuickSubmitPlugin', 'uploadCoverImage'], [
                     'coverImage' => $coverImageName,
                     'submissionId' => $this->_submission->getId(),
                     'publicationId' => $publication->getId(),
@@ -151,7 +155,7 @@ class QuickSubmitForm extends Form
                     // but we have to provide a stage id to make calls
                     // to IssueEntryTabHandler
                     'stageId' => WORKFLOW_STAGE_ID_PRODUCTION,
-                )),
+                ]),
                 __('common.upload'),
                 'modal_add_file'
             ),
@@ -175,14 +179,14 @@ class QuickSubmitForm extends Form
         $seriesOptions = [0 => ''] + $seriesTitles;
         $templateMgr->assign('seriesOptions', $seriesOptions);
 
-        $templateMgr->assign(array(
+        $templateMgr->assign([
             'submission' => $this->_submission,
             'publication' => $publication,
             'locale' => $this->getDefaultFormLocale(),
             'publicationId' => $publication->getId(),
             'licenseUrl' => $this->_context->getData('licenseUrl'),
             'copyrightHolderType' => $this->_context->getData('copyrightHolderType')
-        ));
+        ]);
 
         // DOI support
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
@@ -212,9 +216,9 @@ class QuickSubmitForm extends Form
             $categoriesOptions[(int) $category->getId()] = $title;
         }
 
-        $templateMgr->assign(array(
+        $templateMgr->assign([
             'categoriesOptions' => $categoriesOptions,
-        ));
+        ]);
 
         parent::display($request, $template);
     }
@@ -235,7 +239,7 @@ class QuickSubmitForm extends Form
      */
     public function initData()
     {
-        $this->_data = array();
+        $this->_data = [];
 
         if (!$this->_submission) {
             $this->_data['locale'] = $this->getDefaultFormLocale();
@@ -319,7 +323,7 @@ class QuickSubmitForm extends Form
         $this->_metadataForm->readInputData();
 
         $this->readUserVars(
-            array(
+            [
                 'datePublished',
                 'licenseUrl',
                 'copyrightHolder',
@@ -332,7 +336,7 @@ class QuickSubmitForm extends Form
                 'locale',
                 'assignPublicationDoi',
                 'assignChapterDoi',
-            )
+            ]
         );
     }
 
@@ -368,28 +372,27 @@ class QuickSubmitForm extends Form
 
         parent::execute($this->_submission, ...$functionParams);
 
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO'); /* @var $submissionDao SubmissionDAO */
-        $submissionDao->updateObject($this->_submission);
-        $this->_submission = $submissionDao->getById($this->_submission->getId());
-
+        Repo::submission()->edit($this->_submission, []);
+        $this->_submission = Repo::submission()->get($this->_submission->getId());
         $publication = $this->_submission->getCurrentPublication();
 
         if ($this->getData('datePublished')) {
-            $publication->setData('copyrightYear', date("Y", strtotime($this->getData('datePublished'))));
+            $publication->setData('copyrightYear', date('Y', strtotime($this->getData('datePublished'))));
         }
 
         if ($this->getData('copyrightHolder') == 'author') {
-            $userGroupDao = DAORegistry::getDAO('UserGroupDAO'); /* @var $userGroupDao UserGroupDAO */
-            $userGroups = $userGroupDao->getByContextId($this->_context->getId())->toArray();
+            $userGroups = Repo::userGroup()->getCollector()
+                ->filterByContextIds([$this->_context->getId()])
+                ->getMany();
             $publication->setData('copyrightHolder', $publication->getAuthorString($userGroups), $this->getData('locale'));
         } elseif ($this->getData('copyrightHolder') == 'press') {
-            $publication->setData('copyrightHolder', $this->_context->getLocalizedData('name'), null);
+            $publication->setData('copyrightHolder', $this->_context->getLocalizedData('name'), $this->getData('locale'));
         }
 
         $publication->setData('licenseUrl', $this->getData('licenseUrl'));
 
-        if ($publication->getData('seriesId') !== (int) $this->getData('seriesId')) {
-            $publication->setData('seriesId', $this->getData('seriesId'));
+        if ($this->getData('seriesId') && $publication->getData('seriesId') !== (int) $this->getData('seriesId')) {
+            $publication = Repo::publication()->edit($publication, ['seriesId' => (int) $this->getData('seriesId')]);
         }
 
         // Set DOIs
@@ -418,30 +421,22 @@ class QuickSubmitForm extends Form
         }
 
         // Save the submission categories
-        $categoryDao = DAORegistry::getDAO('CategoryDAO'); /* @var $categoryDao CategoryDAO */
-        $categoryDao->deletePublicationAssignments($publication->getId());
-        if ($categories = $this->getData('categories')) {
-            foreach ((array) $categories as $categoryId) {
-                $categoryDao->insertPublicationAssignment($categoryId, $publication->getId());
-            }
-        }
+        $publication->setData('categoryIds', $this->getData('categories'));
 
         // If publish now, set date and publish publication
         if ($this->getData('submissionStatus') == 1) {
             $publication->setData('datePublished', $this->getData('datePublished'));
-            $publication = Services::get('publication')->publish($publication);
+            Repo::publication()->publish($publication);
         }
 
         // Update publication
-        $publicationDao = DAORegistry::getDAO('PublicationDAO'); /* @var $publicationDao PublicationDAO */
-        $publicationDao->updateObject($publication);
+        Repo::publication()->edit($publication, []);
 
         // Index monograph.
         $submissionSearchIndex = Application::getSubmissionSearchIndex();
         $submissionSearchIndex->submissionMetadataChanged($this->_submission);
         $submissionSearchIndex->submissionFilesChanged($this->_submission);
         $submissionSearchIndex->submissionChangesFinished();
-
     }
 
     public function getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $pubObject, $context, $submission, $chapter)
