@@ -68,7 +68,7 @@
 				{fbvElement type="radio" name="workType" id="isEditedVolume-1" value=$smarty.const.WORK_TYPE_EDITED_VOLUME checked=$workType|compare:$smarty.const.WORK_TYPE_EDITED_VOLUME label="submission.workflowType.editedVolume"}
 			{/fbvFormSection}
 
-			{include file="submission/form/series.tpl" readOnly=$formParams.readOnly}
+			{include file=$quickSubmitPlugin->getTemplateResource("series.tpl") sectionOptions=$sectionOptions readOnly=$formParams.readOnly}
 
 			{if count($categoriesOptions)}
 				{fbvFormSection list=true title="grid.category.categories"}
@@ -82,9 +82,8 @@
 				{/fbvFormSection}
 			{/if}
 
-			{include file="core:submission/submissionMetadataFormTitleFields.tpl"}
-
-			{include file="submission/submissionMetadataFormFields.tpl"}
+			{include file=$quickSubmitPlugin->getTemplateResource("submissionMetadataFormTitleFields.tpl")}
+			{include file=$quickSubmitPlugin->getTemplateResource("submissionMetadataFormFields.tpl")}
 
 			{fbvFormArea id="contributors"}
 				<!--  Contributors -->
