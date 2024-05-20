@@ -101,19 +101,6 @@ class SubmissionMetadataForm
                 }
             }
         }
-
-        $section = Repo::section()->get($submission->getCurrentPublication()->getData('sectionId'), $submission->getData('contextId'));
-        $wordCount = $section->getAbstractWordCount();
-        if (isset($wordCount) && $wordCount > 0) {
-            $this->_parentForm->addCheck(new \PKP\form\validation\FormValidatorCustom($this->_parentForm, 'abstract', 'required', 'submission.submit.form.wordCountAlert', function ($abstract) use ($wordCount) {
-                foreach ($abstract as $localizedAbstract) {
-                    if (count(preg_split('/\s+/', trim(str_replace('&nbsp;', ' ', strip_tags($localizedAbstract))))) > $wordCount) {
-                        return false;
-                    }
-                }
-                return true;
-            }));
-        }
     }
 
     /**
