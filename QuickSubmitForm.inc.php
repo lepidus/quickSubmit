@@ -244,18 +244,6 @@ class QuickSubmitForm extends Form
         if (!$this->_submission) {
             $this->_data['locale'] = $this->getDefaultFormLocale();
 
-            // Get Series
-            $sectionOptions = Repo::section()
-                ->getCollector()
-                ->filterByContextIds([$this->_context->getId()])
-                ->getMany()
-                ->map(function ($section) {
-                    return [
-                        $section->getId() => $section->getLocalizedTitle()
-                    ];
-                })
-                ->toArray();
-
             // Create and insert a new submission
             $this->_submission = Repo::submission()->dao->newDataObject();
             $this->_submission->setContextId($this->_context->getId());
@@ -263,14 +251,12 @@ class QuickSubmitForm extends Form
             $this->_submission->setSubmissionProgress('start');
             $this->_submission->stampStatusModified();
             $this->_submission->setStageId(WORKFLOW_STAGE_ID_SUBMISSION);
-            $this->_submission->setData('seriesId', $seriesId = current(array_keys($sectionOptions)));
             $this->_submission->setLocale($this->getDefaultFormLocale());
 
             $publication = new Publication();
             $publication->setData('submissionId', $this->_submission->getId());
             $publication->setData('locale', $this->getDefaultFormLocale());
             $publication->setData('language', PKPString::substr($this->getDefaultFormLocale(), 0, 2));
-            $publication->setData('seriesId', $seriesId);
             $publication->setData('status', PKPSubmission::STATUS_QUEUED);
             $publication->setData('version', 1);
 
