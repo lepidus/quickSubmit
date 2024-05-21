@@ -14,13 +14,24 @@
  * @brief Form for QuickSubmit one-page submission plugin
  */
 
+namespace APP\plugins\importexport\quickSubmit;
+
+use APP\core\Application;
 use APP\facades\Repo;
+use APP\plugins\importexport\quickSubmit\classes\form\SubmissionMetadataForm;
 use APP\publication\Publication;
+use APP\submission\Submission;
+use APP\template\TemplateManager;
+use PKP\context\Context;
+use PKP\core\Core;
+use PKP\core\PKPString;
+use PKP\db\DAORegistry;
 use PKP\facades\Locale;
 use PKP\form\Form;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use PKP\security\Role;
 use PKP\submission\PKPSubmission;
-
-import('plugins.importexport.quickSubmit.classes.form.SubmissionMetadataForm');
 
 class QuickSubmitForm extends Form
 {
@@ -129,8 +140,8 @@ class QuickSubmitForm extends Form
         // Tell the form what fields are enabled (and which of those are required)
         foreach (Application::getMetadataFields() as $field) {
             $templateMgr->assign([
-                $field . 'Enabled' => in_array($this->_context->getData($field), [METADATA_ENABLE, METADATA_REQUEST, METADATA_REQUIRE]),
-                $field . 'Required' => $this->_context->getData($field) === METADATA_REQUIRE,
+                $field . 'Enabled' => in_array($this->_context->getData($field), [Context::METADATA_ENABLE, Context::METADATA_REQUEST, Context::METADATA_REQUIRE]),
+                $field . 'Required' => $this->_context->getData($field) === Context::METADATA_REQUIRE,
             ]);
         }
 

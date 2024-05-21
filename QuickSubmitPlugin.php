@@ -14,8 +14,13 @@
  * @brief Quick Submit one-page submission plugin
  */
 
+namespace APP\plugins\importexport\quickSubmit;
+
+use APP\notification\NotificationManager;
+use APP\template\TemplateManager;
 use BadMethodCallException;
 use PKP\core\JSONMessage;
+use PKP\notification\PKPNotification;
 
 class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
 {
@@ -85,7 +90,6 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
             case 'deleteCoverImage':
                 return $this->_deleteUploadedImage($request);
             default:
-                $this->import('QuickSubmitForm');
                 $form = new QuickSubmitForm($this, $request);
                 $form->initData();
                 $form->display($request);
@@ -100,7 +104,6 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
      */
     protected function _cancelSubmit($request)
     {
-        $this->import('QuickSubmitForm');
         $form = new QuickSubmitForm($this, $request);
         $form->readInputData();
 
@@ -110,7 +113,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
         $notificationContent = __('notification.removedSubmission');
         $currentUser = $request->getUser();
         $notificationMgr = new NotificationManager();
-        $notificationMgr->createTrivialNotification($currentUser->getId(), NOTIFICATION_TYPE_SUCCESS, ['contents' => $notificationContent]);
+        $notificationMgr->createTrivialNotification($currentUser->getId(), PKPNotification::NOTIFICATION_TYPE_SUCCESS, ['contents' => $notificationContent]);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->display($this->getTemplateResource('submitCancel.tpl'));
@@ -125,8 +128,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
      */
     protected function _showFileUploadForm($request)
     {
-        import('plugins.importexport.quickSubmit.classes.form.UploadImageForm');
-        $imageUploadForm = new UploadImageForm($this, $request);
+        $imageUploadForm = new classes\form\UploadImageForm($this, $request);
         $imageUploadForm->initData($request);
         return new JSONMessage(true, $imageUploadForm->fetch($request));
     }
@@ -140,8 +142,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
      */
     protected function _uploadImage($request)
     {
-        import('plugins.importexport.quickSubmit.classes.form.UploadImageForm');
-        $imageUploadForm = new UploadImageForm($this, $request);
+        $imageUploadForm = new classes\form\UploadImageForm($this, $request);
         $imageUploadForm->readInputData();
 
         $temporaryFileId = $imageUploadForm->uploadFile($request);
@@ -165,8 +166,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
      */
     protected function _saveUploadedImage($request)
     {
-        import('plugins.importexport.quickSubmit.classes.form.UploadImageForm');
-        $imageUploadForm = new UploadImageForm($this, $request);
+        $imageUploadForm = new classes\form\UploadImageForm($this, $request);
         $imageUploadForm->readInputData();
         return $imageUploadForm->execute($request);
     }
@@ -180,8 +180,7 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
      */
     protected function _deleteUploadedImage($request)
     {
-        import('plugins.importexport.quickSubmit.classes.form.UploadImageForm');
-        $imageUploadForm = new UploadImageForm($this, $request);
+        $imageUploadForm = new classes\form\UploadImageForm($this, $request);
         $imageUploadForm->readInputData();
         return $imageUploadForm->deleteCoverImage($request);
     }
@@ -194,7 +193,6 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
     protected function _saveSubmit($request)
     {
         $templateMgr = TemplateManager::getManager($request);
-        $this->import('QuickSubmitForm');
         $form = new QuickSubmitForm($this, $request);
         $form->readInputData();
         if ($form->validate()) {
@@ -217,7 +215,6 @@ class QuickSubmitPlugin extends \PKP\plugins\ImportExportPlugin
     protected function _reloadForm($request)
     {
         $templateMgr = TemplateManager::getManager($request);
-        $this->import('QuickSubmitForm');
         $form = new QuickSubmitForm($this, $request);
         $form->readInputData();
         $form->display($request);

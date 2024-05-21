@@ -14,10 +14,22 @@
  * @brief Form for upload an image.
  */
 
+namespace APP\plugins\importexport\quickSubmit\classes\form;
+
 use APP\facades\Repo;
+use APP\file\PublicFileManager;
+use APP\publication\Publication;
+use APP\submission\Submission;
+use APP\template\TemplateManager;
+use Exception;
 use PKP\core\JSONMessage;
+use PKP\db\DAO;
+use PKP\db\DAORegistry;
 use PKP\facades\Locale;
+use PKP\file\TemporaryFileManager;
 use PKP\form\Form;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\RemoteActionConfirmationModal;
 
 class UploadImageForm extends Form
 {
@@ -113,7 +125,7 @@ class UploadImageForm extends Form
         }
 
         $this->setData('coverImage', $coverImage);
-        $this->setData('imageAltText', $this->submission->getCoverImageAltText($locale));
+        $this->setData('imageAltText', $coverImage['altText'] ?? '');
         $this->setData('coverImageName', $coverImage['uploadName'] ?? '');
     }
 
@@ -158,9 +170,7 @@ class UploadImageForm extends Form
      */
     public function execute(...$functionArgs)
     {
-        $request = Application::get()->getRequest();
-
-        $temporaryFile = $this->fetchTemporaryFile($request);
+        $temporaryFile = $this->fetchTemporaryFile($this->request);
         $locale = Locale::getLocale();
         $coverImage = $this->publication->getData('coverImage');
 
@@ -186,7 +196,7 @@ class UploadImageForm extends Form
                 Repo::publication()->edit($this->publication, []);
 
                 // Clean up the temporary file.
-                $this->removeTemporaryFile($request);
+                $this->removeTemporaryFile($this->request);
 
                 return DAO::getDataChangedEvent();
             }

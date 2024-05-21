@@ -17,6 +17,8 @@
  * implement submission metadata data and form operations.
  */
 
+namespace APP\plugins\importexport\quickSubmit\classes\form;
+
 use APP\core\Application;
 use APP\facades\Repo;
 use APP\log\event\SubmissionEventLogEntry;
