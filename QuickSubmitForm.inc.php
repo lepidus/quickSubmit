@@ -423,14 +423,14 @@ class QuickSubmitForm extends Form
         // Save the submission categories
         $publication->setData('categoryIds', $this->getData('categories'));
 
+        // Update publication
+        Repo::publication()->edit($publication, []);
+
         // If publish now, set date and publish publication
         if ($this->getData('submissionStatus') == 1) {
             $publication->setData('datePublished', $this->getData('datePublished'));
             Repo::publication()->publish($publication);
         }
-
-        // Update publication
-        Repo::publication()->edit($publication, []);
 
         // Index monograph.
         $submissionSearchIndex = Application::getSubmissionSearchIndex();
