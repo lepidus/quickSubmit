@@ -26,6 +26,7 @@ use PKP\core\JSONMessage;
 use PKP\db\DAO;
 use PKP\db\DAORegistry;
 use PKP\facades\Locale;
+use PKP\file\FileManager;
 use PKP\file\TemporaryFileManager;
 use PKP\form\Form;
 use PKP\linkAction\LinkAction;
@@ -174,21 +175,19 @@ class UploadImageForm extends Form
         $locale = Locale::getLocale();
         $coverImage = $this->publication->getData('coverImage');
 
-        import('classes.file.PublicFileManager');
-        $publicFileManager = new PublicFileManager();
-
-        if (is_a($temporaryFile, 'TemporaryFile')) {
+        if ($temporaryFile instanceof \PKP\file\TemporaryFile) {
             $type = $temporaryFile->getFileType();
-            $extension = $publicFileManager->getImageExtension($type);
+            $fileManager = new FileManager();
+            $extension = $fileManager->getImageExtension($type);
             if (!$extension) {
                 return false;
             }
             $locale = Locale::getLocale();
 
-            $newFileName = 'book_' . $this->submissionId . '_cover_' . $locale . $publicFileManager->getImageExtension($temporaryFile->getFileType());
+            $newFileName = 'book_' . $this->submissionId . '_cover_' . $locale . $fileManager->getImageExtension($temporaryFile->getFileType());
 
+            $publicFileManager = new PublicFileManager();
             if ($publicFileManager->copyContextFile($this->context->getId(), $temporaryFile->getFilePath(), $newFileName)) {
-
                 $this->publication->setData('coverImage', [
                     'altText' => $this->getData('imageAltText'),
                     'uploadName' => $newFileName,
@@ -281,7 +280,6 @@ class UploadImageForm extends Form
     {
         $user = $request->getUser();
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $temporaryFileManager->deleteById($this->getData('temporaryFileId'), $user->getId());
     }
@@ -295,7 +293,6 @@ class UploadImageForm extends Form
     {
         $user = $request->getUser();
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $temporaryFile = $temporaryFileManager->handleUpload('uploadedFile', $user->getId());
 
