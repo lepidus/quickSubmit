@@ -189,17 +189,15 @@ class QuickSubmitForm extends Form
         ]);
 
         // DOI support
-        $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
-        $doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
-        if ($doiPubIdPlugin && $doiPubIdPlugin->getSetting($this->_context->getId(), 'doiPrefix')) {
-            if ($doiPubIdPlugin->getSetting($this->_context->getId(), 'enablePublicationDoi')) {
+        if ($this->_context->areDoisEnabled() && !empty($this->_context->getData(Context::SETTING_DOI_PREFIX))) {
+            $enabledDoiTypes = $this->_context->getData(Context::SETTING_ENABLED_DOI_TYPES);
+            if (in_array(Repo::doi()::TYPE_PUBLICATION, $enabledDoiTypes)) {
                 $templateMgr->assign('assignPublicationDoi', true);
             }
-            if ($doiPubIdPlugin->getSetting($this->_context->getId(), 'enableChapterDoi')) {
+            if (in_array(Repo::doi()::TYPE_CHAPTER, $enabledDoiTypes)) {
                 $templateMgr->assign('assignChapterDoi', true);
             }
         }
-        // DOI support
 
         // Categories list
         $categoriesOptions = [];
@@ -383,25 +381,20 @@ class QuickSubmitForm extends Form
 
         // Set DOIs
         if ($this->getData('assignPublicationDoi') == 1 || $this->getData('assignChapterDoi') == 1) {
-            $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $this->_context->getId());
-            $doiPubIdPlugin = $pubIdPlugins['doipubidplugin'];
-            $pubIdPrefix = $doiPubIdPlugin->getSetting($this->_context->getId(), 'doiPrefix');
-            $suffixGenerationStrategy = $doiPubIdPlugin->getSetting($this->_context->getId(), $doiPubIdPlugin->getSuffixFieldName(), $publication);
-
             if ($this->getData('assignPublicationDoi') == 1) {
-                $pubIdSuffix = $this->getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $publication, $this->_context, $this->_submission, null);
-                $pubId = $doiPubIdPlugin->constructPubId($pubIdPrefix, $pubIdSuffix, $this->_context->getId());
-                $publication->setData('pub-id::doi', $pubId);
+                $doiId = Repo::doi()->mintPublicationDoi($publication, $this->_submission, $this->_context);
+                $publication = Repo::publication()->edit($publication, ['doiId' => $doiId]);
             }
 
             if ($this->getData('assignChapterDoi') == 1) {
                 $chapterDao = DAORegistry::getDAO('ChapterDAO'); /* @var $chapterDao ChapterDAO */
                 $chapters = $publication->getData('chapters');
                 foreach ($chapters as $chapter) {
-                    $pubIdSuffix = $this->getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $chapter, $this->_context, $this->_submission, $chapter);
-                    $pubId = $doiPubIdPlugin->constructPubId($pubIdPrefix, $pubIdSuffix, $this->_context->getId());
-                    $chapter->setData('pub-id::doi', $pubId);
-                    $chapterDao->updateObject($chapter);
+                    if (empty($chapter->getData('doiId'))) {
+                        $doiId = Repo::doi()->mintChapterDoi($chapter, $this->_submission, $this->_context);
+                        $chapter->setData('doiId', $doiId);
+                        $chapterDao->updateObject($chapter);
+                    }
                 }
             }
         }
@@ -423,51 +416,5 @@ class QuickSubmitForm extends Form
         $submissionSearchIndex->submissionMetadataChanged($this->_submission);
         $submissionSearchIndex->submissionFilesChanged($this->_submission);
         $submissionSearchIndex->submissionChangesFinished();
-    }
-
-    public function getDoiSuffix($suffixGenerationStrategy, $doiPubIdPlugin, $pubObject, $context, $submission, $chapter)
-    {
-        switch ($suffixGenerationStrategy) {
-            case 'customId':
-                $pubIdSuffix = $pubObject->getData('doiSuffix');
-                break;
-
-            case 'pattern':
-                $suffixPatternsFieldNames = $doiPubIdPlugin->getSuffixPatternsFieldNames();
-                $pubIdSuffix = $doiPubIdPlugin->getSetting($context->getId(), $suffixPatternsFieldNames[$doiPubIdPlugin->getPubObjectType($pubObject)]);
-
-                // %p - press initials
-                $pubIdSuffix = PKPString::regexp_replace('/%p/', PKPString::strtolower($context->getAcronym($context->getPrimaryLocale())), $pubIdSuffix);
-
-                // %x - custom identifier
-                if ($pubObject->getStoredPubId('publisher-id')) {
-                    $pubIdSuffix = PKPString::regexp_replace('/%x/', $pubObject->getStoredPubId('publisher-id'), $pubIdSuffix);
-                }
-
-                if ($submission) {
-                    // %m - monograph id
-                    $pubIdSuffix = PKPString::regexp_replace('/%m/', $submission->getId(), $pubIdSuffix);
-                }
-
-                if ($chapter) {
-                    // %c - chapter id
-                    $pubIdSuffix = PKPString::regexp_replace('/%c/', $chapter->getId(), $pubIdSuffix);
-                }
-
-                break;
-
-            default:
-                $pubIdSuffix = PKPString::strtolower($context->getAcronym($context->getPrimaryLocale()));
-
-                if ($submission) {
-                    $pubIdSuffix .= '.' . $submission->getId();
-                }
-
-                if ($chapter) {
-                    $pubIdSuffix .= '.c' . $chapter->getId();
-                }
-        }
-
-        return $pubIdSuffix;
     }
 }
