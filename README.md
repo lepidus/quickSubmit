@@ -15,7 +15,7 @@ This plugin is licensed under the GNU General Public License v3. See the file `L
 
 System Requirements
 -------------------
-OMP 3.3.0.
+OMP 3.4.0.
 
 Note
 ----
