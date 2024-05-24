@@ -49,7 +49,7 @@ class SubmissionMetadataForm
      */
     public function _getAbstractsRequired($submission)
     {
-        return true;
+        return false;
     }
 
     /**
