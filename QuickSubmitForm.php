@@ -340,14 +340,12 @@ class QuickSubmitForm extends Form
      */
     public function cancel()
     {
-        /** @var SubmissionDAO $submissionDao */
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($this->getData('submissionId'));
+        $submission = Repo::submission()->get($this->getData('submissionId'));
         if ($this->_submission->getContextId() != $this->_context->getId()) {
-            throw new Exeption('Submission not in context!');
+            throw new Exception('Submission not in context!');
         }
         if ($submission) {
-            $submissionDao->deleteById($submission->getId());
+            Repo::submission()->delete($submission);
         }
     }
 
