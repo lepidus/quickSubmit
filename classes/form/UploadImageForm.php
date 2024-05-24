@@ -188,14 +188,19 @@ class UploadImageForm extends Form
 
             $publicFileManager = new PublicFileManager();
             if ($publicFileManager->copyContextFile($this->context->getId(), $temporaryFile->getFilePath(), $newFileName)) {
-                $this->publication->setData('coverImage', [
-                    'altText' => $this->getData('imageAltText'),
-                    'uploadName' => $newFileName,
-                ], $locale);
-                Repo::publication()->edit($this->publication, []);
+                $coverImage = [
+                    $locale => [
+                        'altText' => $this->getData('imageAltText'),
+                        'temporaryFileId' => $this->getData('temporaryFileId'),
+                        'uploadName' => $newFileName
+                    ]
+                ];
+                Repo::publication()->edit($this->publication, ['coverImage' => $coverImage]);
 
                 // Clean up the temporary file.
-                $this->removeTemporaryFile($this->request);
+                if ($this->fetchTemporaryFile($this->request)) {
+                    $this->removeTemporaryFile($this->request);
+                }
 
                 return DAO::getDataChangedEvent();
             }
